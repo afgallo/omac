@@ -30,6 +30,33 @@ hardware auth (Touch ID), boot/branding logo, system sleep/hibernation tuning, m
 Windows VM, gaming. *(Windows VM and gaming may become optional add-on modules later; they are
 not part of the core.)*
 
+## Supported platform & prerequisites
+
+- **macOS:** latest and one back — **Sonoma 14 and Sequoia 15** (N, N-1). Preflight refuses older.
+- **Architecture:** **Apple Silicon (arm64) only.** Homebrew prefix is therefore always
+  `/opt/homebrew`. Preflight refuses Intel.
+- **A clean macOS install is recommended, not required.** omac is a *layer on top of* macOS, not a
+  distro that wipes the disk. It must be idempotent and non-destructive (managed config blocks,
+  confirm-before-overwrite) so it runs safely on an existing Mac. A clean install is documented as
+  the way to get the full pristine "rice" on first run.
+- **Auto-provisioned by the installer:** Xcode Command Line Tools, Homebrew. **Required of the
+  user:** an internet connection and admin rights.
+
+## Canonical paths (reserved by `bootstrap`, used by later modules)
+
+| Path | Side | Role |
+|---|---|---|
+| `~/.local/share/omac` | repo (read-only) | cloned omac: scripts, defaults, themes, templates, migrations. |
+| `~/.local/share/omac/themes/<name>/` | repo | ported per-app theme files + `colors.toml`. |
+| `~/.local/share/omac/templates/` | repo | palette-rendered templates for Mac-only targets. |
+| `~/.config/omac` | user state | `config.zsh`, local overrides, selected theme. |
+| `~/.config/omac/current` | user state | symlink → active theme dir (lives on the *user-state* side). |
+| `~/.local/state/omac/migrations` | user state | applied-migration ledger. |
+
+macOS does not set `$XDG_*` by default; omac derives these via explicit fallbacks
+(`${XDG_CONFIG_HOME:-$HOME/.config}`). This XDG-on-macOS layout is a deliberate choice that mirrors
+Omarchy to lower porting friction — not an oversight; do not "fix" it by moving to `~/Library`.
+
 ## Tool decisions
 
 | Concern | Choice | Notes |
@@ -52,8 +79,10 @@ not part of the core.)*
   **macOS light/dark appearance, SketchyBar, Raycast, AeroSpace accent/border colors** — `omac`
   *derives* the config from that palette via a templating seam (no hand-porting, since there's
   nothing to port).
-- `omac theme set <name>` repoints a `current/` symlink, renders the palette-derived targets, and
-  reloads each app. Mirrors Omarchy's `theme-set` model.
+- `omac theme set <name>` repoints the `~/.config/omac/current` symlink (see Canonical paths),
+  renders the palette-derived targets from `templates/`, and reloads each app. Mirrors Omarchy's
+  `theme-set` model. The `themes/`, `templates/`, and `current` paths are *reserved by `bootstrap`*
+  so this module doesn't have to retrofit the layout later.
 
 This minimizes porting friction now while keeping a clean path to palette-only new themes later.
 
