@@ -108,6 +108,44 @@ Independent sub-projects, each with its own spec → plan → build cycle. Build
 6. **`dotfiles`** — config storage/deploy substrate all modules write through. Mechanism chosen in
    that sub-project's spec. *(Omarchy: Dotfiles.)*
 
+## Reference implementations (to mine, not to follow)
+
+[yatish27/omakos](https://github.com/yatish27/omakos) is a static, single-run macOS dev-machine
+setup (Bash + a Homebrew Brewfile + per-tool scripts). It has no theme orchestration, no CLI, and no
+update engine, so it is a *parts bin*, not a blueprint. Concretely reusable when those module specs
+are written:
+
+- **`software`:** its `configs/Brewfile` is a curated brew/cask/font list that overlaps omac heavily
+  (Ghostty, Raycast, mise, 1Password, Obsidian, LocalSend, Zed, Cursor, Claude, fonts) — a ready
+  seed once the opt-in/out group layer is designed. Swap Rectangle → AeroSpace; add SketchyBar.
+- **`wm`:** its `scripts/mac.sh` is a curated `defaults write` catalog (key-repeat, Finder,
+  three-finger-drag, Dock animation removal, screenshots→folder, disable press-and-hold) — mine the
+  individual settings for the "Common Tweaks / Input" surface; drop its unconditional `killall`.
+- **`theme` / `dotfiles`:** deploy configs through the `omac::install_file` diff-and-backup helper
+  that `bootstrap` provides, not a blind `cp`.
+
+Deliberately *not* copied: its zip-download + `rm -rf` installer (omac uses a re-entrant git clone),
+its inverted/Linux-only `check_internet_connection`, and its committed 1120-line iTerm2 plist (omac
+derives Mac targets from a palette instead).
+
+[basecamp/omarchy](https://github.com/basecamp/omarchy) is the Linux project omac emulates — mature
+(300+ migrations, a full update/state subsystem), so it is worth mining for mechanisms, not layout
+(its `bin/` is ~250 flat `omarchy-<area>-<verb>` scripts; omac keeps its dispatcher + `cmd/`). Already
+folded into `bootstrap`:
+
+- **Fresh-install migration baselining** — stamp existing migrations as applied on first install so a
+  new machine never replays history. A real correctness gap omac's first draft had.
+- **Skip-tracking for failed migrations** — a broken migration can be skipped into a separate ledger
+  instead of blocking every later migration.
+
+Reserved for later modules:
+
+- **First-run marker** (`wm`/`software`) — a one-shot post-install hook for GUI-session steps a piped
+  installer can't do: Accessibility/Screen-Recording grants, launching AeroSpace/SketchyBar.
+
+Deliberately *not* adopted: its release-channel/mirror system (omac is single-channel, personal) and
+its hardware-detection matrix (`omarchy-hw-*`) — Apple Silicon is a single, known platform.
+
 ## Optional polish (deferred to v1.1)
 
 Reminders, Notices (weather/battery/time), OCR text-extraction, AI dictation (Voxtype → macOS

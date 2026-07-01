@@ -104,8 +104,15 @@ idempotent (skipped if its begin-marker is already present) and removable by mar
 ### 5. Migration engine
 - Migrations are timestamped zsh files in `migrations/` (e.g. `20260618120000-example.zsh`).
 - `omac update` runs any whose marker is absent from `~/.local/state/omac/migrations`, in order,
-  writing the marker **only after** a migration exits 0. A failed migration is *not* marked, so it
-  reruns next time.
+  writing the marker **only after** a migration exits 0.
+- **Fresh-install baselining:** `omac install` stamps every existing migration as already-applied on
+  first install, so a new machine never replays historical migrations — only migrations added *after*
+  your install date ever run. Guarded on the ledger's absence (omac's `install` doubles as the repair
+  command, so re-running must never mark a genuinely pending migration). Mirrors Omarchy's
+  `preflight/migrations.sh`, with the re-run guard omac needs that Omarchy doesn't.
+- **Failure handling:** a failed migration is not marked. omac offers to skip it — the skip is
+  recorded in a separate `migrations/skipped/` ledger so it neither reruns nor blocks later
+  migrations; declining aborts the update. (Skip-tracking adopted from Omarchy's `omarchy-migrate`.)
 - **Hard rule (not just convention):** every migration MUST be internally idempotent — it may run
   partially then fail and be rerun from the top. Use check-then-act, never blind mutation.
   Anti-pattern: `echo X >> file` (doubles on rerun). Correct: `grep -q X file || echo X >> file`.
@@ -117,6 +124,12 @@ idempotent (skipped if its begin-marker is already present) and removable by mar
 - No hardcoded usernames/paths; derive `$HOME`, `$(brew --prefix)`, repo dir at runtime.
 - Destructive actions (overwriting non-omac config, deleting dirs) prompt via `confirm` unless
   `OMAC_YES=1`.
+- Overwriting an existing config never loses data: the foundational `omac::install_file` helper
+  copies only when the target is absent, skips when byte-identical, and otherwise shows a diff,
+  moves the old file aside (`*.omac-backup.<timestamp>`), then writes. The `software`, `theme`, and
+  `dotfiles` modules deploy through it rather than a blind `cp`.
+- `confirm` reads from `/dev/tty`, not stdin — under `curl … | zsh` stdin is the script itself — and
+  fails safe to "no" when there is no terminal (CI / non-interactive).
 - Clone step is re-entrant against an interrupted prior run (see boot.sh step 4).
 
 ## Testing
@@ -145,9 +158,23 @@ example migration, `default/config.zsh`, `version`, and the install/shell-integr
 - **Shell integration:** managed `~/.zprofile` block via `brew shellenv` (Apple Silicon → `/opt/homebrew`).
 - **Uninstall:** included in this module (pairs with the managed-block markers).
 - **Test framework:** plain zsh assertions; adopt `bats` only if they get unwieldy.
+- **Reference mined:** [yatish27/omakos](https://github.com/yatish27/omakos) (a static macOS setup
+  script) — adopted its diff-and-backup config-deploy pattern (`omac::install_file`) and its
+  `/dev/tty` prompt read; rejected its zip-download/`rm -rf` installer and broken network check in
+  favour of the re-entrant git clone + `ping -t` preflight already specced here.
+- **Reference mined:** [basecamp/omarchy](https://github.com/basecamp/omarchy) (the Linux project
+  omac emulates) — adopted **fresh-install migration baselining** and **skip-tracking for failed
+  migrations** (both above). Not adopted: its release-channel/mirror system (omac is single-channel)
+  and richer per-bin metadata headers (omac keeps `# help:` + `_`-prefix). Its **first-run marker**
+  idea is reserved, not built here (see below).
 
 ## Deferred (noted, not built here)
 
+- **First-run marker** (adopted-in-principle from Omarchy's `first-run.mode`): a one-shot
+  `~/.local/state/omac/first-run` marker written at install and consumed once by a later module for
+  steps a `curl … | zsh` install cannot do headless — granting Accessibility/Screen-Recording
+  permissions, launching AeroSpace/SketchyBar, GUI-session-only `defaults`. Bootstrap only *reserves*
+  the state path; the marker + `omac first-run` handler belong to `wm`/`software`.
 - `omac env`/`--json` machine-readable output for downstream scripts (launcher module).
 - Actual theme rendering, templates content, and `current` symlink *management* (theme module) —
   bootstrap only reserves the paths.

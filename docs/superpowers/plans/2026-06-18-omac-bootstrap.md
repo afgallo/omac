@@ -177,6 +177,18 @@ check "require_cmd fails on missing" "1" "$(omac::require_cmd definitely-not-a-r
 # path_contains (run in subshells so the test process's own PATH is untouched)
 check "path_contains finds dir" "0" "$(PATH=/a:/opt/homebrew/bin:/b; omac::path_contains /opt/homebrew/bin; print $?)"
 check "path_contains rejects missing" "1" "$(PATH=/a:/b; omac::path_contains /opt/homebrew/bin; print $?)"
+# safe, non-destructive file deploy (backup-on-overwrite)
+tmp="$(mktemp -d)"
+print -r -- one > "$tmp/src"
+omac::install_file "$tmp/src" "$tmp/dst" >/dev/null 2>&1
+check "install_file creates a missing dest" "one" "$(<"$tmp/dst")"
+OMAC_YES=1 omac::install_file "$tmp/src" "$tmp/dst" >/dev/null 2>&1
+# List-then-grep, not a bare glob: an unmatched glob is a hard error under zsh NOMATCH.
+check "install_file leaves an identical dest un-backed-up" "0" "$(ls "$tmp" | grep -c omac-backup)"
+print -r -- two > "$tmp/dst"
+OMAC_YES=1 omac::install_file "$tmp/src" "$tmp/dst" >/dev/null 2>&1
+check "install_file overwrites a differing dest" "one" "$(<"$tmp/dst")"
+check "install_file backs up the replaced file" "1" "$(ls "$tmp" | grep -c omac-backup)"
 finish
 ```
 
@@ -230,8 +242,11 @@ omac::require_cmd() {        # omac::require_cmd <cmd>
 
 omac::confirm() {            # omac::confirm <prompt> ; OMAC_YES=1 auto-accepts
   [[ "${OMAC_YES:-0}" == 1 ]] && return 0
+  # Read from the controlling terminal, not stdin: under `curl … | zsh` stdin is
+  # the script itself, so a plain `read` never reaches the user. No tty (CI /
+  # non-interactive) → fail safe to "no".
   local reply
-  read -r "reply?$1 [y/N] "
+  read -r "reply?$1 [y/N] " </dev/tty 2>/dev/null || return 1
   [[ "$reply" == [yY]* ]]
 }
 
@@ -240,6 +255,42 @@ omac::path_contains() {      # omac::path_contains <dir>
     *":$1:"*) return 0 ;;
     *)        return 1 ;;
   esac
+}
+
+# Deploy a file idempotently and non-destructively (pattern mined from omakos'
+# config scripts): absent → copy; byte-identical → skip; differing → show a diff,
+# back the old file aside, then copy. Used by later modules (software/theme/dotfiles).
+omac::install_file() {       # omac::install_file <src> <dest>
+  local src="$1" dest="$2"
+  mkdir -p "${dest:h}"
+  if [[ ! -e "$dest" ]]; then
+    cp "$src" "$dest"; omac::ok "installed ${dest:t}"; return 0
+  fi
+  if cmp -s "$src" "$dest"; then
+    omac::log "up to date: ${dest:t}"; return 0
+  fi
+  omac::warn "${dest} differs from the omac version"
+  command -v diff >/dev/null 2>&1 && diff -u "$dest" "$src"
+  if omac::confirm "overwrite ${dest:t}? (a backup is kept)"; then
+    omac::backup_path "$dest"
+    cp "$src" "$dest"; omac::ok "installed ${dest:t}"
+  else
+    omac::log "kept existing ${dest:t}"
+  fi
+}
+
+# Rename an existing path aside with a timestamp — no data loss on overwrite.
+# Uses the zsh/datetime `strftime` builtin (no external `date` subprocess).
+# NB: the local is `target`, NOT `path` — in zsh `$path` is tied to `$PATH`, so
+# `local path=…` would clobber PATH for this scope and break `mv`.
+omac::backup_path() {        # omac::backup_path <target>
+  local target="$1"
+  [[ -e "$target" ]] || return 0
+  zmodload zsh/datetime           # provides both `strftime` and `$EPOCHSECONDS`
+  local stamp; strftime -s stamp '%Y%m%d_%H%M%S' "$EPOCHSECONDS"
+  local backup="$target.omac-backup.$stamp"
+  mv "$target" "$backup"
+  omac::warn "backed up existing → ${backup:t}"
 }
 
 # Marker-delimited managed block in a config file (idempotent add, marker-based remove).
@@ -564,6 +615,18 @@ check "marker written after first run" "1" "$(ls "$OMAC_MIGRATIONS_STATE" | grep
 omac::migrate >/dev/null 2>&1
 check "second run exits 0" "0" "$?"
 check "marker still present" "1" "$(ls "$OMAC_MIGRATIONS_STATE" | grep -c example)"
+
+# a failed migration can be skipped (separate ledger) without blocking the run
+skip_out="$(
+  fake="$(mktemp -d)"; ln -s "$ROOT/lib" "$fake/lib"; mkdir -p "$fake/migrations"
+  print -r -- 'exit 1' > "$fake/migrations/29990101000000-boom.zsh"
+  s="$(mktemp -d)"
+  OMAC_HOME="$fake" OMAC_MIGRATIONS_STATE="$s/migrations"
+  OMAC_YES=1 omac::migrate >/dev/null 2>&1
+  print -r -- "$?:$(ls "$OMAC_MIGRATIONS_STATE/skipped" 2>/dev/null | grep -c boom)"
+)"
+check "skipping a failed migration exits 0" "0" "${skip_out%%:*}"
+check "the skip is recorded in its own ledger" "1" "${skip_out##*:}"
 finish
 ```
 
@@ -577,18 +640,23 @@ Expected: `test_migrate.zsh` errors (no `lib/migrate.zsh`).
 `lib/migrate.zsh`:
 ```zsh
 # Run any migration whose marker is absent, in filename order, then mark it.
-# A migration is marked ONLY after exit 0, so a failure reruns next time —
-# every migration MUST therefore be internally idempotent (check-then-act).
+# A migration is marked ONLY after exit 0. On failure the user may skip it — the
+# skip is recorded in a SEPARATE ledger so it neither reruns nor blocks the rest;
+# declining aborts. (Skip-tracking mined from omarchy's omarchy-migrate.) Every
+# migration MUST still be internally idempotent (check-then-act).
 omac::migrate() {
   setopt local_options null_glob
-  mkdir -p "$OMAC_MIGRATIONS_STATE"
+  mkdir -p "$OMAC_MIGRATIONS_STATE" "$OMAC_MIGRATIONS_STATE/skipped"
   local f id
   for f in "$OMAC_HOME"/migrations/*.zsh; do
     id="${f:t:r}"
-    [[ -e "$OMAC_MIGRATIONS_STATE/$id" ]] && continue
+    [[ -e "$OMAC_MIGRATIONS_STATE/$id" || -e "$OMAC_MIGRATIONS_STATE/skipped/$id" ]] && continue
     omac::info "running migration $id"
     if zsh "$f"; then
       : > "$OMAC_MIGRATIONS_STATE/$id"
+    elif omac::confirm "migration $id failed — skip and continue?"; then
+      : > "$OMAC_MIGRATIONS_STATE/skipped/$id"
+      omac::warn "skipped migration $id"
     else
       omac::error "migration failed: $id"
       return 1
@@ -613,7 +681,7 @@ exit 0
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `cd ~/Code/omac && zsh test/run.zsh`
-Expected: `test_migrate.zsh` shows 3 `ok` lines; overall exit 0.
+Expected: `test_migrate.zsh` shows 5 `ok` lines; overall exit 0.
 
 - [ ] **Step 6: Commit**
 
@@ -807,6 +875,7 @@ check "CLI symlinked into prefix/bin" "$ROOT/bin/omac" "$(readlink "$OMAC_PREFIX
 check "config seeded" "1" "$(test -f "$OMAC_CONFIG/config.zsh" && print 1 || print 0)"
 check "zprofile block written" "1" "$(grep -c '>>> omac >>>' "$OMAC_PROFILE")"
 contains "zprofile block has shellenv" "brew shellenv" "$(<"$OMAC_PROFILE")"
+check "migrations baselined on first install" "1" "$(ls "$OMAC_STATE/migrations" 2>/dev/null | grep -c example)"
 
 # second run is idempotent: still exits 0 and does NOT duplicate the block
 zsh "$ROOT/bin/omac" install >/dev/null 2>&1
@@ -839,6 +908,20 @@ prefix="$(omac::prefix)"
 bindir="$prefix/bin"
 mkdir -p "$bindir" "$OMAC_CONFIG" "$OMAC_STATE"
 
+# Baseline migrations on first install: stamp every existing migration as already
+# applied so a fresh machine never replays historical migrations (mined from
+# omarchy's preflight/migrations.sh). Guarded on the ledger's ABSENCE because
+# `install` doubles as the repair command — re-running must never mark a genuinely
+# pending migration. New migrations arrive later via `omac update`.
+if [[ ! -d "$OMAC_MIGRATIONS_STATE" ]]; then
+  mkdir -p "$OMAC_MIGRATIONS_STATE"
+  typeset m
+  for m in "$OMAC_HOME"/migrations/*.zsh(N); do
+    : > "$OMAC_MIGRATIONS_STATE/${m:t:r}"
+  done
+  omac::ok "baselined existing migrations as applied"
+fi
+
 ln -sf "$OMAC_HOME/bin/omac" "$bindir/omac"
 omac::ok "linked omac -> $bindir/omac"
 
@@ -865,7 +948,7 @@ omac::ok "install complete"
 - [ ] **Step 5: Run the test to verify it passes**
 
 Run: `cd ~/Code/omac && zsh test/run.zsh`
-Expected: `test_install.zsh` shows 7 `ok` lines; overall exit 0.
+Expected: `test_install.zsh` shows 8 `ok` lines; overall exit 0.
 
 - [ ] **Step 6: Commit**
 
@@ -1051,5 +1134,7 @@ git commit -m "feat: add boot.sh installer with preflight and re-entrant clone"
 
 - **Spec coverage:** preflight/prereqs (Task 11), install locations + reserved layout (Tasks 1,2,5), `boot.sh` + re-entrant clone (Task 11), Homebrew bootstrap (Task 11), shell integration `.zprofile` block (Task 9, tested), config sourcing (Task 3, tested), dispatcher flat + nested (Tasks 3,4), `help`/`version`/`path`/`doctor`/`update`/`install`/`uninstall` (Tasks 3,5,7,8,9,10), doctor PATH check + nonzero-exit contract (Task 8, tested), migration engine + idempotency rule (Task 6), idempotency of install/block (Task 9 tests). Every spec section maps to a task.
 - **Review fixes applied:** BLOCKER config-never-sourced → Task 3 + test; BLOCKER PATH-in-fresh-shell → Task 9 `.zprofile` block + Task 8 PATH check + Task 11 manual fresh-shell test; MAJOR doctor/spec divergence → Task 8; MAJOR reserved theme layout → Tasks 1,2,5 + master spec; MAJOR uninstall → Task 10; MAJOR re-entrant clone → Task 11; MAJOR nested resolution → Tasks 3,4; MINOR migration idempotency → Task 6 rule/comment; test fixes: exec-bit (all tests use `zsh bin/omac`), doctor exit assertion (Task 8), update real-git-pull (Task 7 `.git`-free temp tree).
-- **Type/name consistency:** helpers `omac::info/ok/log/warn/error/require_cmd/confirm/path_contains/ensure_block/remove_block/prefix/run/resolve/migrate`; params `omac::block_begin/omac::block_end`; env `OMAC_HOME/CONFIG/STATE/MIGRATIONS_STATE/PROFILE/CURRENT/THEMES/TEMPLATES/PREFIX/YES/REPO` — used identically across all tasks.
+- **Reference mining (omakos):** the diff-aware, backup-on-overwrite `omac::install_file` / `omac::backup_path` helpers and the `/dev/tty` read in `omac::confirm` are adapted from [yatish27/omakos](https://github.com/yatish27/omakos)' config scripts. Deliberately **not** copied: its zip-download + `rm -rf` installer (boot.sh keeps the re-entrant git clone) and its inverted/Linux-only `check_internet_connection` (boot.sh keeps the correct `ping -t` preflight).
+- **Reference mining (omarchy):** two mechanisms adopted from [basecamp/omarchy](https://github.com/basecamp/omarchy) that omac's earlier draft lacked — (1) **fresh-install migration baselining** (Task 9: `install` stamps all existing migrations as applied so a new machine never replays history; guarded on ledger-absence because omac's `install` also repairs, unlike omarchy's install-only `preflight/migrations.sh`), and (2) **skip-tracking for failed migrations** (Task 6: a failure can be skipped into a separate `migrations/skipped/` ledger so it neither reruns nor blocks the rest, instead of hard-aborting the whole update). Not adopted: omarchy's release-channel/mirror system and per-bin `# omarchy:key=value` metadata beyond omac's existing `# help:` + `_`-prefix conventions (out of scope for a personal single-channel tool).
+- **Type/name consistency:** helpers `omac::info/ok/log/warn/error/require_cmd/confirm/path_contains/install_file/backup_path/ensure_block/remove_block/prefix/run/resolve/migrate`; params `omac::block_begin/omac::block_end`; env `OMAC_HOME/CONFIG/STATE/MIGRATIONS_STATE/PROFILE/CURRENT/THEMES/TEMPLATES/PREFIX/YES/REPO` — used identically across all tasks.
 - **Private command convention:** `cmd/_*.zsh` are hidden from `help` (used by the Task 3 config-sourcing fixture).
