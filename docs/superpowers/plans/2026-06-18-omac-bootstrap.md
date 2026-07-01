@@ -8,7 +8,7 @@
 
 **Tech Stack:** zsh, Homebrew, git. No build step. Tests are plain zsh assertion scripts.
 
-> **Platform:** Apple Silicon only; macOS 14 (Sonoma) / 15 (Sequoia). **Environment:** all `zsh test/run.zsh` and `boot.sh` commands run on macOS (zsh is default there). The repo already exists at `~/Code/omac` with the design specs committed. Tests invoke the CLI as `zsh bin/omac …` (no exec-bit dependency) and override every real path via env vars into temp dirs — no test touches real `~/.zprofile`, PATH, or a git remote.
+> **Platform:** Apple Silicon only; macOS 14 (Sonoma) / 15 (Sequoia) / 26 (Tahoe) — floor major 14, numbering jumped 15→26. **Environment:** all `zsh test/run.zsh` and `boot.sh` commands run on macOS (zsh is default there). The repo already exists at `~/Code/omac` with the design specs committed. Tests invoke the CLI as `zsh bin/omac …` (no exec-bit dependency) and override every real path via env vars into temp dirs — no test touches real `~/.zprofile`, PATH, or a git remote.
 
 ---
 
@@ -1049,7 +1049,7 @@ setopt no_unset pipe_fail
 
 OMAC_REPO="${OMAC_REPO:-https://github.com/afgallo/omac.git}"
 OMAC_HOME="${OMAC_HOME:-$HOME/.local/share/omac}"
-OMAC_MIN_MAJOR=14   # macOS Sonoma; supports 14 (N-1) and 15 (N)
+OMAC_MIN_MAJOR=14   # floor: Sonoma 14. Supported: Sonoma 14, Sequoia 15, Tahoe 26 (numbering jumped 15→26)
 
 abort() { print -r -- "✗ $*" >&2; exit 1 }
 
@@ -1058,7 +1058,7 @@ abort() { print -r -- "✗ $*" >&2; exit 1 }
 [[ "$(uname -m)" == "arm64" ]]  || abort "omac requires Apple Silicon (arm64)"
 os_major="$(sw_vers -productVersion | cut -d. -f1)"
 (( os_major >= OMAC_MIN_MAJOR )) || \
-  abort "omac requires macOS $OMAC_MIN_MAJOR+ (Sonoma); found $(sw_vers -productVersion)"
+  abort "omac requires macOS $OMAC_MIN_MAJOR+ (Sonoma or newer); found $(sw_vers -productVersion)"
 ping -c1 -t5 github.com >/dev/null 2>&1 || abort "no network: cannot reach github.com"
 
 # --- Xcode Command Line Tools ---

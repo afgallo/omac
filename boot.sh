@@ -5,7 +5,7 @@ setopt no_unset pipe_fail
 
 OMAC_REPO="${OMAC_REPO:-https://github.com/afgallo/omac.git}"
 OMAC_HOME="${OMAC_HOME:-$HOME/.local/share/omac}"
-OMAC_MIN_MAJOR=14   # macOS Sonoma; supports 14 (N-1) and 15 (N)
+OMAC_MIN_MAJOR=14   # floor: Sonoma 14. Supported: Sonoma 14, Sequoia 15, Tahoe 26 (numbering jumped 15→26)
 
 abort() { print -r -- "✗ $*" >&2; exit 1 }
 
@@ -14,7 +14,7 @@ abort() { print -r -- "✗ $*" >&2; exit 1 }
 [[ "$(uname -m)" == "arm64" ]]  || abort "omac requires Apple Silicon (arm64)"
 os_major="$(sw_vers -productVersion | cut -d. -f1)"
 (( os_major >= OMAC_MIN_MAJOR )) || \
-  abort "omac requires macOS $OMAC_MIN_MAJOR+ (Sonoma); found $(sw_vers -productVersion)"
+  abort "omac requires macOS $OMAC_MIN_MAJOR+ (Sonoma or newer); found $(sw_vers -productVersion)"
 # Reachability check over HTTPS (what `git clone` actually uses) rather than ICMP:
 # many networks block/deprioritize ping while HTTPS works, so curl avoids false negatives.
 curl -fsS --max-time 5 -o /dev/null https://github.com \

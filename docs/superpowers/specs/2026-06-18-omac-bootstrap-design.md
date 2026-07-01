@@ -28,7 +28,7 @@ two-level nested commands), foundational commands (`help`, `version`, `update`, 
 |---|---|---|
 | OS | `uname -s` == Darwin | abort |
 | Architecture | `uname -m` == arm64 (Apple Silicon only) | abort |
-| macOS version | major ≥ 14 (Sonoma; supports 14 + 15) | abort with version message |
+| macOS version | major ≥ 14 (Sonoma 14, Sequoia 15, Tahoe 26; numbering jumped 15→26) | abort with version message |
 | Network | can reach github.com | abort |
 | Admin rights | implied (Homebrew/CLT need sudo) | surfaced by the failing step |
 | Xcode CLT | auto-installed if absent | abort + "rerun after CLT finishes" |
