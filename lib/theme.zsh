@@ -156,3 +156,57 @@ omac::theme::apply_vscode() {        # <colorTheme>
   [[ -d "$cfg/Cursor" ]] && omac::theme::_vscode_write "$name" "$cfg/Cursor/User/settings.json"
   omac::info "editor theme: $name"
 }
+
+# --- Orchestration -----------------------------------------------------------
+
+# Rewrite the managed OMAC_ACTIVE_THEME block in config.zsh (update-safe:
+# remove then re-add, since ensure_block alone won't change an existing value).
+omac::theme::persist() {         # <name>
+  local file="$OMAC_CONFIG/config.zsh"
+  omac::remove_block "$file"
+  omac::ensure_block "$file" "export OMAC_ACTIVE_THEME=\"$1\""
+}
+
+# The switch: validate, repoint current, render/apply every target, persist.
+omac::theme::set() {             # <name>
+  local name="$1"
+  if [[ -z "$name" ]] || ! omac::theme::is_theme "$name"; then
+    omac::error "unknown theme: ${name:-<none>}"
+    omac::theme::list_names
+    return 1
+  fi
+  local cfg; cfg="$(omac::theme::config_dir)"
+
+  # 1. Repoint the current symlink (class-B ported files reachable via current).
+  mkdir -p "$OMAC_CONFIG"
+  ln -sfn "$OMAC_THEMES/$name" "$OMAC_CURRENT"
+
+  # 2. Render class-A/C targets into their app locations.
+  omac::theme::render_ghostty "$name" "$cfg/ghostty/omac-theme.conf"
+  omac::theme::render_sketchybar "$name" "$cfg/sketchybar/colors.sh"
+
+  # 3. Editors (best-effort): VS Code colorTheme from the theme's vscode.json.
+  #    vscode.json is JSON ("name": "..."), so read it JSON-aware, not via toml_get.
+  local ct; ct="$(grep -E '"name"[[:space:]]*:' "$OMAC_THEMES/$name/vscode.json" 2>/dev/null \
+                  | head -1 | sed -E 's/.*"name"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
+  [[ -n "$ct" ]] && omac::theme::apply_vscode "$ct"
+
+  # 4-5. Appearance + wallpaper.
+  omac::theme::apply_appearance "$name"
+  omac::theme::apply_wallpaper "$name"
+
+  # 6. Reload what can reload live.
+  command -v sketchybar >/dev/null 2>&1 && sketchybar --reload >/dev/null 2>&1
+
+  # 7. Persist.
+  omac::theme::persist "$name"
+
+  omac::ok "theme set: $name"
+  omac::info "Ghostty, Neovim, and btop apply on the next new window/instance"
+}
+
+# Re-apply the current theme (re-render + reload) without changing the selection.
+omac::theme::reload() {
+  local name; name="$(omac::theme::current)" || { omac::error "no active theme"; return 1; }
+  omac::theme::set "$name"
+}
