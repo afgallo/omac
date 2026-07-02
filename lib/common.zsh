@@ -30,8 +30,9 @@ omac::path_contains() {      # omac::path_contains <dir>
 }
 
 # Deploy a file idempotently and non-destructively (pattern mined from omakos'
-# config scripts): absent → copy; byte-identical → skip; differing → show a diff,
-# back the old file aside, then copy. Used by later modules (software/theme/dotfiles).
+# config scripts): absent → copy; byte-identical → skip; differing → warn and
+# prompt, backing the old file aside before overwrite. Used by later modules
+# (software/theme/dotfiles).
 omac::install_file() {       # omac::install_file <src> <dest>
   local src="$1" dest="$2"
   mkdir -p "${dest:h}"
@@ -42,7 +43,6 @@ omac::install_file() {       # omac::install_file <src> <dest>
     omac::log "up to date: ${dest:t}"; return 0
   fi
   omac::warn "${dest} differs from the omac version"
-  command -v diff >/dev/null 2>&1 && diff -u "$dest" "$src"
   if omac::confirm "overwrite ${dest:t}? (a backup is kept)"; then
     omac::backup_path "$dest"
     cp "$src" "$dest"; omac::ok "installed ${dest:t}"
