@@ -159,6 +159,14 @@ present). `wm` + `launcher` give a usable keyboard-driven desktop. `theme` is th
 depends on the apps from earlier modules existing. `dotfiles` is the substrate — its mechanism is
 decided early but it stabilizes as modules land. First sub-project to spec in detail: **`bootstrap`**.
 
+> **Build-order note (2026-07-02):** after completing `wm`, we chose to build **`theme` (module 5)
+> before `launcher` (module 4)**. `theme` has no dependency on `launcher` — their Raycast surfaces are
+> orthogonal (`theme` owns Raycast's *colors*; `launcher` owns its *Script Commands*) — it is the
+> headline payoff, and building it now validates the `wm` color-seam architecture while it is fresh.
+> `launcher` stays fully unblocked (its only outstanding build dep, `wm`, is done) and follows `theme`.
+> Module numbers are stable identities, not the build sequence. Launcher decisions captured so far
+> live in `2026-07-02-omac-launcher-decisions.md`.
+
 ## Open questions for sub-project specs
 
 - `dotfiles` mechanism: GNU Stow vs bare git repo vs custom symlink script (decided in `dotfiles` spec).
