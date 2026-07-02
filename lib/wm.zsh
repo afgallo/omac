@@ -32,3 +32,35 @@ omac::wm::deploy_sketchybar() {
   chmod +x "$dest/sketchybarrc" "$dest"/plugins/*(.N) 2>/dev/null
   return 0
 }
+
+# Apply every tweaks.conf entry via `defaults write`, then remap caps->escape.
+# Manifest lines are `domain key type value` (single-token value); blank and
+# `#` lines are ignored.
+omac::wm::apply_tweaks() {
+  omac::require_cmd defaults || return 1
+  local manifest="$OMAC_WM/tweaks.conf"
+  if [[ ! -f "$manifest" ]]; then
+    omac::warn "no tweaks.conf; skipping defaults"
+  else
+    local line; local -a f
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      line="${line%%#*}"          # drop trailing comment
+      f=(${=line})                # word-split
+      (( ${#f} >= 4 )) || continue
+      omac::log "defaults: ${f[1]} ${f[2]}"
+      defaults write "${f[1]}" "${f[2]}" "-${f[3]}" "${f[4]}"
+    done < "$manifest"
+  fi
+  omac::wm::remap_caps_escape
+  omac::ok "tweaks applied"
+}
+
+# Map Caps Lock -> Escape (the user's Omarchy `caps:escape`). Session-scoped;
+# reboot persistence via a LaunchAgent is a v1.1 follow-up.
+omac::wm::remap_caps_escape() {
+  command -v hidutil >/dev/null 2>&1 || return 0
+  omac::info "remapping Caps Lock -> Escape"
+  hidutil property --set \
+    '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' \
+    >/dev/null
+}
