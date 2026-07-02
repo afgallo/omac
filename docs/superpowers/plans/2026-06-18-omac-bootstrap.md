@@ -259,7 +259,7 @@ omac::path_contains() {      # omac::path_contains <dir>
 
 # Deploy a file idempotently and non-destructively (pattern mined from omakos'
 # config scripts): absent → copy; byte-identical → skip; differing → show a diff,
-# back the old file aside, then copy. Used by later modules (software/theme/dotfiles).
+# back the old file aside, then copy. Used by later modules (software/theme).
 omac::install_file() {       # omac::install_file <src> <dest>
   local src="$1" dest="$2"
   mkdir -p "${dest:h}"

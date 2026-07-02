@@ -1,6 +1,6 @@
 # omac `wm` module — design
 
-**Status:** Approved design · **Date:** 2026-07-02 · **Parent:** `2026-06-18-omac-design.md` (module 3 of 6)
+**Status:** Approved design · **Date:** 2026-07-02 · **Parent:** `2026-06-18-omac-design.md` (module 3 of 5)
 
 ## What this is
 
@@ -153,8 +153,9 @@ A structural topbar only:
 - `colors.sh` — neutral default palette shipped by `wm`. **This file is the seam:** the `theme`
   module (module 5) will later overwrite it (rendered from the theme's `colors.toml` palette), so
   `wm` never hardcodes theme colors inline and the two modules never fight.
-- `plugins/` — item scripts: workspace indicators (driven by AeroSpace's
-  `aerospace_workspace_change` trigger), clock, battery, etc. Each is `chmod +x`.
+- `plugins/` — item scripts, each `chmod +x`: workspace indicators (driven by AeroSpace's
+  `aerospace_workspace_change` trigger), a clock, and a battery indicator (percentage + charging
+  state, refreshed on a timer). Colors come from the `colors.sh` seam, never hardcoded.
 
 `wm` performs **no palette rendering** — it ships working neutral defaults and leaves palette
 derivation to `theme`.
@@ -177,9 +178,11 @@ Seed set:
 - **Finder:** show all file extensions; show path bar; screenshots saved to a dedicated folder.
 - **Dock:** autohide; remove launch/animation delay.
 
-**Reversibility:** `omac uninstall` (and/or a `wm` reversal path) restores prior values where a clean
-inverse exists. Some `defaults` keys have no clean "unset"; those are documented as one-way rather
-than silently dropped. Caps→Escape (a keyboard-remap, not a plain default) is reverted explicitly.
+**Reversibility (deferred to v2.0):** the `defaults`-based tweaks are applied one-way in v1; a `wm`
+reversal path that restores prior values on `omac uninstall` is **deferred to v2.0**. Caps→Escape is a
+session-scoped `hidutil` remap (no LaunchAgent persistence in v1), so it self-reverts on the next
+reboot and needs no explicit uninstall step. `omac uninstall` therefore reverses only the `bootstrap`
+(CLI symlink, `~/.zprofile` block) and `launcher` (Spotlight ⌘Space) changes in v1.
 
 ## First-run activation (guided auto-start)
 
