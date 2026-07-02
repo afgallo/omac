@@ -32,7 +32,8 @@ not part of the core.)*
 
 ## Supported platform & prerequisites
 
-- **macOS:** latest and one back — **Sonoma 14 and Sequoia 15** (N, N-1). Preflight refuses older.
+- **macOS:** **Sonoma 14, Sequoia 15, and Tahoe 26** (Apple's year-based numbering jumped 15→26,
+  so there is no 16–25). Preflight enforces a major-version floor of 14 and refuses anything older.
 - **Architecture:** **Apple Silicon (arm64) only.** Homebrew prefix is therefore always
   `/opt/homebrew`. Preflight refuses Intel.
 - **A clean macOS install is recommended, not required.** omac is a *layer on top of* macOS, not a

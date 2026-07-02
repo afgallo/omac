@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+emulate -L zsh
+setopt no_unset pipe_fail
+
+# Resolve repo root from this script's real path (:A resolves symlinks).
+export OMAC_HOME="${OMAC_HOME:-${0:A:h:h}}"
+source "$OMAC_HOME/lib/paths.zsh"
+source "$OMAC_HOME/lib/common.zsh"
+
+# Load user config (overrides, default theme, etc.) if present.
+[[ -r "$OMAC_CONFIG/config.zsh" ]] && source "$OMAC_CONFIG/config.zsh"
+
+# Run a command script inside a function scope so `local` and `return` work.
+omac::run() {
+  local script="$1"; shift
+  source "$script" "$@"
+}
+
+# Resolve <cmd> [<sub>] to "depth:scriptpath" (depth 2 = nested, 1 = flat).
+omac::resolve() {
+  local a="$1" b="${2:-}"
+  if [[ -n "$b" && -f "$OMAC_HOME/cmd/$a/$b.zsh" ]]; then
+    print -r -- "2:$OMAC_HOME/cmd/$a/$b.zsh"; return 0
+  fi
+  if [[ -f "$OMAC_HOME/cmd/$a.zsh" ]]; then
+    print -r -- "1:$OMAC_HOME/cmd/$a.zsh"; return 0
+  fi
+  return 1
+}
+
+main() {
+  local cmd="${1:-help}"
+  (( $# )) && shift
+  local match
+  if match="$(omac::resolve "$cmd" "${1:-}")"; then
+    local depth="${match%%:*}" script="${match#*:}"
+    (( depth == 2 )) && (( $# )) && shift   # consume the subcommand token
+    omac::run "$script" "$@"
+    return $?
+  fi
+  omac::error "unknown command: $cmd${1:+ $1}"
+  omac::run "$OMAC_HOME/cmd/help.zsh"
+  return 1
+}
+
+main "$@"
+exit $?
