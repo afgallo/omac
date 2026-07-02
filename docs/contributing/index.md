@@ -13,7 +13,7 @@ themes/          # bundled themes (per-app files + colors.toml)
 templates/       # palette-rendered templates for macOS-only targets
 migrations/      # ordered migration scripts
 test/            # zsh test suite
-docs/            # this documentation site (docs/superpowers/ = internal specs, unpublished)
+docs/            # this documentation site
 ```
 
 ## Running the tests
@@ -35,8 +35,7 @@ mkdocs serve            # http://127.0.0.1:8000
 mkdocs build --strict   # what CI runs; fails on broken links
 ```
 
-Pushing to `main` rebuilds and publishes to GitHub Pages automatically. Internal design specs
-under `docs/superpowers/` are excluded from the published site.
+Pushing to `main` rebuilds and publishes to GitHub Pages automatically.
 
 ## Recording the demo
 

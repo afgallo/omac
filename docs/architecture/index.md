@@ -48,5 +48,3 @@ almost unchanged), and **palette-derived** for the macOS-only targets Omarchy ne
 light/dark appearance, SketchyBar, Raycast, AeroSpace colors), rendered from a small `colors.toml`
 palette through a templating seam. `omac theme set` repoints the `current` symlink, re-renders the
 derived targets, and reloads each app.
-
-For the full design, see the specs under `docs/superpowers/specs/` in the repository.

@@ -6,8 +6,6 @@ repo_name: afgallo/omac
 copyright: Built for macOS on Apple Silicon.
 
 docs_dir: docs
-exclude_docs: |
-  superpowers/
 
 theme:
   name: material

@@ -51,8 +51,6 @@ test/run.zsh                # run the zsh test suite
 mkdocs serve                # preview the docs site (see docs/contributing)
 ```
 
-Design specs live under `docs/superpowers/specs/`.
-
 ## Requirements
 
 Apple Silicon (arm64) · macOS Sonoma 14, Sequoia 15, or Tahoe 26. Requires an internet connection
