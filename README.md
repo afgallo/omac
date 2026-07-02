@@ -44,6 +44,16 @@ omac help                   # list every command
 
 Getting started, the complete CLI reference, the theme and hotkey guides, and the architecture.
 
+## Acknowledgements
+
+omac stands on the shoulders of two projects that inspired this build:
+
+- **[Omarchy](https://omarchy.org)** ([basecamp/omarchy](https://github.com/basecamp/omarchy)) — DHH's
+  beautiful, opinionated, keyboard-driven Arch Linux. Its themes and desktop philosophy are the
+  north star omac ports to macOS.
+- **[Omakos](https://github.com/yatish27/omakos)** — an opinionated, idempotent macOS dev-machine
+  setup that shaped how omac approaches declarative, re-runnable Homebrew provisioning.
+
 ## Development
 
 ```bash

@@ -4,6 +4,7 @@ cask "lastpass"
 cask "typora"
 cask "localsend"
 cask "mpv"
+cask "flameshot"
 
 # Desktop environment — installed here; configured by the wm/launcher/theme modules.
 cask "ghostty"                                  # canonical / default terminal

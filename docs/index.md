@@ -30,3 +30,13 @@ Apple Silicon (arm64) · macOS Sonoma 14, Sequoia 15, or Tahoe 26.
 !!! note "The demo above is a placeholder"
     The real `omac theme set` cast is recorded on an installed machine — see
     [Contributing](contributing/index.md#recording-the-demo).
+
+## Acknowledgements
+
+omac stands on the shoulders of two projects that inspired this build:
+
+- **[Omarchy](https://omarchy.org)** ([basecamp/omarchy](https://github.com/basecamp/omarchy)) —
+  DHH's beautiful, opinionated, keyboard-driven Arch Linux. Its themes and desktop philosophy are
+  the north star omac ports to macOS.
+- **[Omakos](https://github.com/yatish27/omakos)** — an opinionated, idempotent macOS dev-machine
+  setup that shaped how omac approaches declarative, re-runnable Homebrew provisioning.

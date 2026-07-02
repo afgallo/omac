@@ -16,10 +16,10 @@ Each group is a Brewfile under `software/groups/`.
 | Group | Contents (highlights) |
 |---|---|
 | `ai` | `claude-code`, `opencode`, LM Studio |
-| `shell` | `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `fd`, `git-delta`, `starship` |
+| `shell` | `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `fd`, `git-delta`, `starship`, `jq`, `tree`, `fastfetch`, `awscli` |
 | `ides` | Visual Studio Code, Cursor, Zed, Neovim + [LazyVim](https://www.lazyvim.org) |
 | `tuis` | `lazygit`, `lazydocker`, `btop`, `pgcli` |
-| `guis` | Obsidian, Typora, LocalSend, mpv, Pixelmator Pro, **Ghostty** (default terminal), **Raycast** |
+| `guis` | Obsidian, Typora, LocalSend, mpv, Flameshot, **Ghostty** (default terminal), **Raycast** |
 | `fonts` | JetBrainsMono, FiraCode, Hack, CaskaydiaCove — all Nerd Fonts |
 
 The `ides` group installs the Neovim binary; the [LazyVim](https://www.lazyvim.org) base
