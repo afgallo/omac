@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# omac — SketchyBar entry point (structure only). Colors live in colors.sh,
+# which the theme module will later own. Deployed to ~/.config/sketchybar/.
+source "$HOME/.config/sketchybar/colors.sh"
+
+sketchybar --bar height=32 position=top padding_left=8 padding_right=8 color="$BAR_COLOR"
+
+sketchybar --default icon.font="JetBrainsMono Nerd Font:Bold:14.0" \
+                     label.font="JetBrainsMono Nerd Font:Bold:14.0" \
+                     label.color="$LABEL_COLOR" \
+                     padding_left=4 padding_right=4
+
+# Workspace indicators, driven by AeroSpace's aerospace_workspace_change trigger.
+sketchybar --add event aerospace_workspace_change
+for sid in 1 2 3 4 5 6 7 8 9; do
+  sketchybar --add item space.$sid left \
+             --set space.$sid label="$sid" \
+                   click_script="aerospace workspace $sid" \
+                   script="$HOME/.config/sketchybar/plugins/aerospace.sh $sid" \
+             --subscribe space.$sid aerospace_workspace_change
+done
+
+# Clock on the right.
+sketchybar --add item clock right \
+           --set clock update_freq=10 script="$HOME/.config/sketchybar/plugins/clock.sh"
+
+sketchybar --update

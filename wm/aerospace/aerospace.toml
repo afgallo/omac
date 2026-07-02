@@ -1,0 +1,92 @@
+# omac — AeroSpace window manager (structural config only; colors are owned by
+# the theme module). Modifier = Cmd, mirroring the user's Omarchy SUPER map.
+# Deployed to ${XDG_CONFIG_HOME:-$HOME/.config}/aerospace/aerospace.toml.
+
+start-at-login = true
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# Gaps between windows and screen edges.
+[gaps]
+inner.horizontal = 8
+inner.vertical   = 8
+outer.left       = 8
+outer.right      = 8
+outer.top        = 8
+outer.bottom     = 8
+
+# Notify SketchyBar when the focused workspace changes (native integration).
+exec-on-workspace-change = ['/bin/bash', '-c',
+  'sketchybar --trigger aerospace_workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+
+[mode.main.binding]
+# Move focus (vim keys) — Omarchy SUPER+SHIFT+H/J/K/L.
+cmd-shift-h = 'focus left'
+cmd-shift-j = 'focus down'
+cmd-shift-k = 'focus up'
+cmd-shift-l = 'focus right'
+
+# Move the focused window — cmd-alt to avoid clobbering focus binds.
+cmd-alt-h = 'move left'
+cmd-alt-j = 'move down'
+cmd-alt-k = 'move up'
+cmd-alt-l = 'move right'
+
+# Layout toggles.
+cmd-slash = 'layout tiles accordion'   # toggle split style
+cmd-comma = 'layout floating tiling'   # toggle float
+cmd-f     = 'macos-native-fullscreen'
+
+# Close the focused window — Omarchy SUPER+Q (intentionally overrides macOS quit).
+cmd-q = 'close'
+
+# Switch workspace — Omarchy SUPER+1..9.
+cmd-1 = 'workspace 1'
+cmd-2 = 'workspace 2'
+cmd-3 = 'workspace 3'
+cmd-4 = 'workspace 4'
+cmd-5 = 'workspace 5'
+cmd-6 = 'workspace 6'
+cmd-7 = 'workspace 7'
+cmd-8 = 'workspace 8'
+cmd-9 = 'workspace 9'
+
+# Move the focused window to a workspace — Omarchy SUPER+SHIFT+1..9.
+cmd-shift-1 = 'move-node-to-workspace 1'
+cmd-shift-2 = 'move-node-to-workspace 2'
+cmd-shift-3 = 'move-node-to-workspace 3'
+cmd-shift-4 = 'move-node-to-workspace 4'
+cmd-shift-5 = 'move-node-to-workspace 5'
+cmd-shift-6 = 'move-node-to-workspace 6'
+cmd-shift-7 = 'move-node-to-workspace 7'
+cmd-shift-8 = 'move-node-to-workspace 8'
+cmd-shift-9 = 'move-node-to-workspace 9'
+
+# Enter the resize sub-mode.
+cmd-r = 'mode resize'
+
+# App launches (exec-and-forget open …) — mirrors the user's bindings.conf.
+# `open -a` focuses the app if it is already running (= Omarchy launch-or-focus).
+cmd-enter     = 'exec-and-forget open -na Ghostty'
+cmd-alt-enter = 'exec-and-forget open -na Ghostty'   # tmux auto-attach: Ghostty-config follow-up
+cmd-shift-b   = 'exec-and-forget open -a Safari'
+cmd-shift-n   = 'exec-and-forget open -a "Visual Studio Code"'
+cmd-shift-o   = 'exec-and-forget open -a Obsidian'
+cmd-shift-s   = 'exec-and-forget open -a Slack'
+cmd-shift-m   = 'exec-and-forget open -a Spotify'
+cmd-shift-g   = 'exec-and-forget open -a Signal'
+cmd-shift-a   = 'exec-and-forget open https://chatgpt.com'
+cmd-shift-c   = 'exec-and-forget open https://claude.ai'
+cmd-shift-e   = 'exec-and-forget open https://app.hey.com'
+cmd-shift-y   = 'exec-and-forget open https://youtube.com'
+cmd-shift-x   = 'exec-and-forget open https://x.com'
+cmd-shift-p   = 'exec-and-forget screencapture -i'
+
+[mode.resize.binding]
+h = 'resize width -50'
+j = 'resize height +50'
+k = 'resize height -50'
+l = 'resize width +50'
+enter = 'mode main'
+esc   = 'mode main'
