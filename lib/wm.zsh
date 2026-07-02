@@ -103,3 +103,18 @@ omac::wm::status() {
     printf "%-12s %-9s %s\n" "$name" "$dep" "$inst"
   done
 }
+
+# Orchestrate the guided first-run: guard the apps are installed, deploy both
+# configs, apply tweaks, then activate.
+omac::wm::install() {
+  if ! command -v aerospace >/dev/null 2>&1 || ! command -v sketchybar >/dev/null 2>&1; then
+    omac::error "AeroSpace and SketchyBar must be installed first"
+    omac::info "run: omac software install"
+    return 1
+  fi
+  omac::wm::deploy_aerospace
+  omac::wm::deploy_sketchybar
+  omac::wm::apply_tweaks
+  omac::wm::activate
+  omac::ok "wm installed"
+}
