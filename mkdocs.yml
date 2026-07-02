@@ -61,6 +61,11 @@ markdown_extensions:
 
 extra_css:
   - assets/extra.css
+  - assets/asciinema-player.min.css
+
+extra_javascript:
+  - assets/asciinema-player.min.js
+  - assets/player-init.js
 
 nav:
   - Home: index.md
