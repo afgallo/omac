@@ -23,6 +23,7 @@ export XDG_CONFIG_HOME="$(mktemp -d)"
 export OMAC_CONFIG="$(mktemp -d)"
 export OMAC_CURRENT="$OMAC_CONFIG/current"
 export HOME="$(mktemp -d)"
+export OMAC_APPSUPPORT="$(mktemp -d)"
 _theme_stub_setup
 source "$ROOT/lib/theme.zsh"
 
@@ -38,7 +39,7 @@ present="$([[ -f "$XDG_CONFIG_HOME/ghostty/omac-theme.conf" ]] && print yes || p
 check "ghostty fragment written" "yes" "$present"
 contains "ghostty theme name" "theme = tokyonight" "$(<"$XDG_CONFIG_HOME/ghostty/omac-theme.conf")"
 contains "sketchybar rendered" "BAR_COLOR=0xff1a1b26" "$(<"$XDG_CONFIG_HOME/sketchybar/colors.sh")"
-contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$XDG_CONFIG_HOME/Code/User/settings.json")"
+contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$OMAC_APPSUPPORT/Code/User/settings.json")"
 contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "1-wall.jpg" "$(<"$OSASCRIPT_LOG")"
 contains "sketchybar reloaded" "--reload" "$(<"$SKETCHYBAR_LOG")"

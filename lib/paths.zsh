@@ -9,6 +9,7 @@
 : ${OMAC_TEMPLATES:="$OMAC_HOME/templates"}
 : ${OMAC_DEFAULT_THEME:="tokyo-night"}
 : ${OMAC_ACTIVE_THEME:=""}
+: ${OMAC_APPSUPPORT:="$HOME/Library/Application Support"}  # VS Code/Cursor settings root (NOT XDG on macOS)
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
 : ${OMAC_WM:="$OMAC_HOME/wm"}
 # launcher: internal seams (not user-facing). Raycast ships no PATH binary, so we

@@ -149,11 +149,17 @@ omac::theme::_vscode_write() {       # <colorTheme> <settings-file>
   fi
 }
 
+# VS Code/Cursor settings root. NOT XDG on macOS — they read ~/Library/Application Support.
+# One place so tests redirect via OMAC_APPSUPPORT.
+omac::theme::appsupport_dir() {
+  print -r -- "$OMAC_APPSUPPORT"
+}
+
 # Apply the VS Code colorTheme to VS Code and Cursor (whichever config dirs exist).
 omac::theme::apply_vscode() {        # <colorTheme>
-  local name="$1" cfg; cfg="$(omac::theme::config_dir)"
-  omac::theme::_vscode_write "$name" "$cfg/Code/User/settings.json"
-  [[ -d "$cfg/Cursor" ]] && omac::theme::_vscode_write "$name" "$cfg/Cursor/User/settings.json"
+  local name="$1" as; as="$(omac::theme::appsupport_dir)"
+  omac::theme::_vscode_write "$name" "$as/Code/User/settings.json"
+  [[ -d "$as/Cursor" ]] && omac::theme::_vscode_write "$name" "$as/Cursor/User/settings.json"
   omac::info "editor theme: $name"
 }
 
