@@ -251,10 +251,26 @@ omac::theme::reload() {
 
 # --- One-time wiring (install) -----------------------------------------------
 
+# Install one extension via <cli>, retrying transient marketplace/network
+# failures (the #1 cause of a spurious "failed:" during `theme install`).
+# "Already installed" exits 0, so it counts as success. On the final failed
+# attempt the captured output is echoed so the caller can report *why*.
+omac::theme::_install_ext() {   # <cli> <id>
+  local cli="$1" id="$2" attempt out
+  for attempt in 1 2 3; do
+    if out="$("$cli" --install-extension "$id" 2>&1)"; then
+      return 0
+    fi
+    (( attempt < 3 )) && sleep 2
+  done
+  print -r -- "$out"
+  return 1
+}
+
 # Pre-install the distinct VS Code/Cursor theme extensions across all themes.
 omac::theme::install_extensions() {
   setopt local_options null_glob
-  local -a ids; local f id
+  local -a ids; local f id err
   for f in "$OMAC_THEMES"/*/vscode.json; do
     id="$(grep -E '"extension"[[:space:]]*:' "$f" 2>/dev/null \
           | head -1 | sed -E 's/.*"extension"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
@@ -267,8 +283,10 @@ omac::theme::install_extensions() {
   fi
   for id in $ids; do
     omac::info "installing extension: $id"
-    code --install-extension "$id" >/dev/null 2>&1 || omac::warn "failed: $id"
-    command -v cursor >/dev/null 2>&1 && cursor --install-extension "$id" >/dev/null 2>&1
+    if ! err="$(omac::theme::_install_ext code "$id")"; then
+      omac::warn "failed: $id — ${err##*$'\n'}"
+    fi
+    command -v cursor >/dev/null 2>&1 && omac::theme::_install_ext cursor "$id" >/dev/null 2>&1
   done
 }
 
