@@ -210,3 +210,44 @@ omac::theme::reload() {
   local name; name="$(omac::theme::current)" || { omac::error "no active theme"; return 1; }
   omac::theme::set "$name"
 }
+
+# --- One-time wiring (install) -----------------------------------------------
+
+# Pre-install the distinct VS Code/Cursor theme extensions across all themes.
+omac::theme::install_extensions() {
+  setopt local_options null_glob
+  local -a ids; local f id
+  for f in "$OMAC_THEMES"/*/vscode.json; do
+    id="$(grep -E '"extension"[[:space:]]*:' "$f" 2>/dev/null \
+          | head -1 | sed -E 's/.*"extension"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
+    [[ -n "$id" ]] && ids+=("$id")
+  done
+  ids=(${(u)ids})                 # dedupe
+  if ! command -v code >/dev/null 2>&1; then
+    omac::warn "no 'code' CLI — skipping VS Code extension pre-install"
+    return 0
+  fi
+  for id in $ids; do
+    omac::info "installing extension: $id"
+    code --install-extension "$id" >/dev/null 2>&1 || omac::warn "failed: $id"
+    command -v cursor >/dev/null 2>&1 && cursor --install-extension "$id" >/dev/null 2>&1
+  done
+}
+
+# Point the user's real app configs at omac (idempotent managed blocks/symlink).
+omac::theme::wire() {
+  local cfg; cfg="$(omac::theme::config_dir)"
+  omac::ensure_block "$cfg/ghostty/config" "config-file = $cfg/ghostty/omac-theme.conf"
+  mkdir -p "$cfg/nvim/lua/plugins"
+  ln -sfn "$OMAC_CURRENT/neovim.lua" "$cfg/nvim/lua/plugins/omac-theme.lua"
+  omac::ensure_block "$cfg/btop/btop.conf" "color_theme = \"$OMAC_CURRENT/btop.theme\""
+  omac::ok "wired ghostty, neovim, btop"
+}
+
+# Full first-run: extensions, wiring, then apply the default theme.
+omac::theme::install() {
+  omac::theme::install_extensions
+  omac::theme::wire
+  omac::theme::set "$OMAC_DEFAULT_THEME"
+  omac::ok "theme installed (default: $OMAC_DEFAULT_THEME)"
+}
