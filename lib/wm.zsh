@@ -64,3 +64,25 @@ omac::wm::remap_caps_escape() {
     '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' \
     >/dev/null
 }
+
+# Reload both tools' configs (used by `omac wm reload` and after activation).
+omac::wm::reload() {
+  omac::require_cmd aerospace || return 1
+  omac::require_cmd sketchybar || return 1
+  aerospace reload-config
+  sketchybar --reload
+}
+
+# Guided first-run activation: start the SketchyBar service, reload both, and
+# open the Accessibility pane (the one grant macOS forbids scripting).
+omac::wm::activate() {
+  omac::require_cmd brew || return 1
+  omac::info "starting sketchybar service"
+  brew services start sketchybar
+  # AeroSpace start-at-login is set in aerospace.toml; reload if it is running.
+  command -v aerospace   >/dev/null 2>&1 && aerospace reload-config 2>/dev/null
+  command -v sketchybar  >/dev/null 2>&1 && sketchybar --reload 2>/dev/null
+  omac::info "opening Accessibility settings — grant AeroSpace access there"
+  open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+  omac::ok "wm activated (grant AeroSpace Accessibility to finish first run)"
+}
