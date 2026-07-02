@@ -111,3 +111,48 @@ omac::theme::first_background() {    # <name>
   files=(${(o)files})              # sort
   print -r -- "${files[1]}"
 }
+
+# --- System appliers (side effects: osascript / editor settings) -------------
+
+# macOS light/dark. Live via System Events.
+omac::theme::apply_appearance() {    # <name>
+  local dark=true
+  omac::theme::is_light "$1" && dark=false
+  omac::info "appearance: dark=$dark"
+  osascript -e "tell application \"System Events\" to tell appearance preferences to set dark mode to $dark" >/dev/null 2>&1 \
+    || omac::warn "could not set appearance (System Events)"
+}
+
+# Desktop wallpaper: the theme's first (omarchy-free) background. Live.
+omac::theme::apply_wallpaper() {     # <name>
+  local bg; bg="$(omac::theme::first_background "$1")" || { omac::warn "no background for $1"; return 0; }
+  omac::info "wallpaper: ${bg:t}"
+  osascript -e "tell application \"System Events\" to set picture of every desktop to \"$bg\"" >/dev/null 2>&1 \
+    || omac::warn "could not set wallpaper"
+}
+
+# Write workbench.colorTheme into one editor settings file (create/replace/insert).
+omac::theme::_vscode_write() {       # <colorTheme> <settings-file>
+  local name="$1" f="$2" tmp
+  mkdir -p "${f:h}"
+  if [[ ! -f "$f" ]]; then
+    printf '{\n  "workbench.colorTheme": "%s"\n}\n' "$name" > "$f"
+    return 0
+  fi
+  tmp="$f.omac.tmp"
+  if grep -q '"workbench.colorTheme"' "$f"; then
+    sed -E 's/("workbench\.colorTheme"[[:space:]]*:[[:space:]]*")[^"]*(")/\1'"$name"'\2/' "$f" > "$tmp" && mv "$tmp" "$f"
+  else
+    awk -v v="  \"workbench.colorTheme\": \"$name\"," '
+      !done && /\{/ { print; print v; done=1; next } { print }
+    ' "$f" > "$tmp" && mv "$tmp" "$f"
+  fi
+}
+
+# Apply the VS Code colorTheme to VS Code and Cursor (whichever config dirs exist).
+omac::theme::apply_vscode() {        # <colorTheme>
+  local name="$1" cfg; cfg="$(omac::theme::config_dir)"
+  omac::theme::_vscode_write "$name" "$cfg/Code/User/settings.json"
+  [[ -d "$cfg/Cursor" ]] && omac::theme::_vscode_write "$name" "$cfg/Cursor/User/settings.json"
+  omac::info "editor theme: $name"
+}
