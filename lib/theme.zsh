@@ -272,10 +272,29 @@ omac::theme::install_extensions() {
   done
 }
 
+# Scaffold the LazyVim starter into <cfg>/nvim so the themed `neovim.lua` we
+# symlink below has a real LazyVim base to load. Non-destructive: if any nvim
+# config already exists we leave it untouched (bring your own LazyVim layout).
+# Follows https://www.lazyvim.org/installation.
+omac::theme::bootstrap_lazyvim() {   # <cfg>
+  local nvim="$1/nvim"
+  [[ -e "$nvim" ]] && return 0
+  command -v git >/dev/null 2>&1 || { omac::warn "git missing; skipped LazyVim scaffold"; return 0; }
+  omac::info "scaffolding LazyVim starter into $nvim"
+  if git clone --depth 1 https://github.com/LazyVim/starter "$nvim" >/dev/null 2>&1; then
+    rm -rf "$nvim/.git"
+    omac::ok "LazyVim installed — launch nvim, then run :LazyHealth"
+  else
+    rm -rf "$nvim" 2>/dev/null   # don't leave a half-cloned config behind
+    omac::warn "LazyVim scaffold failed (git clone); themed nvim won't load until installed"
+  fi
+}
+
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).
 omac::theme::wire() {
   local cfg; cfg="$(omac::theme::config_dir)"
   omac::ensure_block "$cfg/ghostty/config" "config-file = $cfg/ghostty/omac-theme.conf"
+  omac::theme::bootstrap_lazyvim "$cfg"
   mkdir -p "$cfg/nvim/lua/plugins"
   ln -sfn "$OMAC_CURRENT/neovim.lua" "$cfg/nvim/lua/plugins/omac-theme.lua"
   omac::ensure_block "$cfg/btop/btop.conf" "color_theme = \"$OMAC_CURRENT/btop.theme\""

@@ -17,10 +17,16 @@ Each group is a Brewfile under `software/groups/`.
 |---|---|
 | `ai` | `claude-code`, `opencode`, LM Studio |
 | `shell` | `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `fd`, `git-delta`, `starship` |
-| `ides` | Visual Studio Code, Cursor, Zed |
+| `ides` | Visual Studio Code, Cursor, Zed, Neovim + [LazyVim](https://www.lazyvim.org) |
 | `tuis` | `lazygit`, `lazydocker`, `btop`, `pgcli` |
 | `guis` | Obsidian, Typora, LocalSend, mpv, Pixelmator Pro, **Ghostty** (default terminal), **Raycast** |
 | `fonts` | JetBrainsMono, FiraCode, Hack, CaskaydiaCove — all Nerd Fonts |
+
+The `ides` group installs the Neovim binary; the [LazyVim](https://www.lazyvim.org) base
+config is scaffolded by the [theme engine](../themes/index.md) the first time a theme is
+applied, so the Neovim colorscheme each theme ships actually loads. This is
+non-destructive — if you already have an nvim config, omac leaves it untouched and just
+drops its theme plugin into your existing LazyVim-style layout (`lua/plugins/`).
 
 ## Runtimes
 
