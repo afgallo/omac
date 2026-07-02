@@ -126,8 +126,8 @@ idempotent (skipped if its begin-marker is already present) and removable by mar
   `OMAC_YES=1`.
 - Overwriting an existing config never loses data: the foundational `omac::install_file` helper
   copies only when the target is absent, skips when byte-identical, and otherwise shows a diff,
-  moves the old file aside (`*.omac-backup.<timestamp>`), then writes. The `software`, `theme`, and
-  `dotfiles` modules deploy through it rather than a blind `cp`.
+  moves the old file aside (`*.omac-backup.<timestamp>`), then writes. The `software` and `theme`
+  modules deploy through it rather than a blind `cp`.
 - `confirm` reads from `/dev/tty`, not stdin — under `curl … | zsh` stdin is the script itself — and
   fails safe to "no" when there is no terminal (CI / non-interactive).
 - Clone step is re-entrant against an interrupted prior run (see boot.sh step 4).

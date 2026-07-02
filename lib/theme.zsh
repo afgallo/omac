@@ -149,12 +149,46 @@ omac::theme::_vscode_write() {       # <colorTheme> <settings-file>
   fi
 }
 
+# VS Code/Cursor settings root. NOT XDG on macOS — they read ~/Library/Application Support.
+# One place so tests redirect via OMAC_APPSUPPORT.
+omac::theme::appsupport_dir() {
+  print -r -- "$OMAC_APPSUPPORT"
+}
+
 # Apply the VS Code colorTheme to VS Code and Cursor (whichever config dirs exist).
 omac::theme::apply_vscode() {        # <colorTheme>
-  local name="$1" cfg; cfg="$(omac::theme::config_dir)"
-  omac::theme::_vscode_write "$name" "$cfg/Code/User/settings.json"
-  [[ -d "$cfg/Cursor" ]] && omac::theme::_vscode_write "$name" "$cfg/Cursor/User/settings.json"
+  local name="$1" as; as="$(omac::theme::appsupport_dir)"
+  omac::theme::_vscode_write "$name" "$as/Code/User/settings.json"
+  [[ -d "$as/Cursor" ]] && omac::theme::_vscode_write "$name" "$as/Cursor/User/settings.json"
   omac::info "editor theme: $name"
+}
+
+# bat: write a managed --theme block into ~/.config/bat/config when the theme
+# names a bat built-in; no-op otherwise. Best-effort (needs the `bat` CLI).
+omac::theme::apply_bat() {           # <name>
+  local theme; theme="$(omac::theme::toml_get "$OMAC_THEMES/$1/apps.toml" bat)" || return 0
+  [[ -n "$theme" ]] || return 0
+  if ! command -v bat >/dev/null 2>&1; then
+    omac::warn "no 'bat' — skipping bat theme"; return 0
+  fi
+  local f; f="$(omac::theme::config_dir)/bat/config"
+  mkdir -p "${f:h}"
+  omac::remove_block "$f"
+  omac::ensure_block "$f" "--theme=\"$theme\""
+  omac::info "bat theme: $theme"
+}
+
+# git-delta: reuse the theme's bat name as delta's syntax-theme (shared
+# namespace). No-op when unnamed; best-effort (needs `git`).
+omac::theme::apply_delta() {         # <name>
+  local theme; theme="$(omac::theme::toml_get "$OMAC_THEMES/$1/apps.toml" bat)" || return 0
+  [[ -n "$theme" ]] || return 0
+  if ! command -v git >/dev/null 2>&1; then
+    omac::warn "no 'git' — skipping delta theme"; return 0
+  fi
+  git config --global delta.syntax-theme "$theme" 2>/dev/null \
+    || omac::warn "could not set delta syntax-theme"
+  omac::info "delta syntax-theme: $theme"
 }
 
 # --- Orchestration -----------------------------------------------------------
@@ -190,6 +224,10 @@ omac::theme::set() {             # <name>
   local ct; ct="$(grep -E '"name"[[:space:]]*:' "$OMAC_THEMES/$name/vscode.json" 2>/dev/null \
                   | head -1 | sed -E 's/.*"name"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
   [[ -n "$ct" ]] && omac::theme::apply_vscode "$ct"
+
+  # 3b. bat + git-delta (best-effort): both driven by the apps.toml `bat` name.
+  omac::theme::apply_bat "$name"
+  omac::theme::apply_delta "$name"
 
   # 4-5. Appearance + wallpaper.
   omac::theme::apply_appearance "$name"

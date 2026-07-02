@@ -14,6 +14,7 @@ mkdir -p "$OMAC_THEMES/dark/backgrounds" "$OMAC_THEMES/lite/backgrounds"
 
 export XDG_CONFIG_HOME="$(mktemp -d)"
 export HOME="$(mktemp -d)"
+export OMAC_APPSUPPORT="$(mktemp -d)"
 _theme_stub_setup
 source "$ROOT/lib/theme.zsh"
 
@@ -30,7 +31,7 @@ contains "wallpaper set to first bg" "1-wall.jpg" "$wlog"
 check "wallpaper never omarchy" "no" "$([[ "$wlog" == *omarchy* ]] && print yes || print no)"
 
 # VS Code: create when absent, replace when present.
-vs="$XDG_CONFIG_HOME/Code/User/settings.json"
+vs="$OMAC_APPSUPPORT/Code/User/settings.json"
 omac::theme::apply_vscode "Tokyo Night" >/dev/null 2>&1
 contains "vscode created with theme" '"workbench.colorTheme": "Tokyo Night"' "$(<"$vs")"
 omac::theme::apply_vscode "Nord" >/dev/null 2>&1

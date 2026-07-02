@@ -20,4 +20,10 @@ done
 check "rose-pine is light"       "0" "$(omac::theme::is_light rose-pine; print $?)"
 check "catppuccin-latte is light" "0" "$(omac::theme::is_light catppuccin-latte; print $?)"
 check "no omarchy backgrounds" "" "$(find "$ROOT/themes" -iname '*omarchy*')"
+# apps.toml must not carry dead `zed` keys (Zed theming is out of scope).
+zedhits=0
+for af in "$ROOT"/themes/*/apps.toml(N); do
+  grep -Eq '^[[:space:]]*zed[[:space:]]*=' "$af" && (( zedhits++ ))
+done
+check "no apps.toml has a zed key" "0" "$zedhits"
 finish
