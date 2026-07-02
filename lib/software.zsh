@@ -72,3 +72,23 @@ omac::software::install_runtimes() {
   omac::info "installing runtimes: ${tools[*]}"
   mise use -g "${tools[@]}"
 }
+
+# Install every group. Continue past a failing group so one bad Brewfile never
+# blocks the rest; print a summary; return non-zero if any group failed.
+omac::software::install_all() {
+  omac::require_cmd brew || return 1
+  local -a failed
+  local g
+  for g in $(omac::software::groups); do
+    if ! omac::software::install_group "$g"; then
+      failed+=("$g")
+      omac::warn "group failed: $g (continuing)"
+    fi
+  done
+  if (( ${#failed} )); then
+    omac::error "software: ${#failed} group(s) failed: ${failed[*]}"
+    return 1
+  fi
+  omac::ok "software: all groups installed"
+  return 0
+}
