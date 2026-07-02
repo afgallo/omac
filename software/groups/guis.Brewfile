@@ -4,7 +4,6 @@ cask "lastpass"
 cask "typora"
 cask "localsend"
 cask "mpv"
-cask "pixelmator-pro"
 
 # Desktop environment — installed here; configured by the wm/launcher/theme modules.
 cask "ghostty"                                  # canonical / default terminal

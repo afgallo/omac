@@ -47,7 +47,8 @@ Getting started, the complete CLI reference, the theme and hotkey guides, and th
 ## Development
 
 ```bash
-test/run.zsh                # run the zsh test suite
+test/run.zsh                # run the offline zsh test suite (brew/mise stubbed)
+test/validate_manifests.zsh # resolve every brew/cask token against real Homebrew
 mkdocs serve                # preview the docs site (see docs/contributing)
 ```
 

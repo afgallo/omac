@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.zsh"
+      - "software/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "**/*.zsh"
+      - "software/**"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+jobs:
+  # Offline, hermetic zsh unit suite (brew/mise stubbed). Cross-platform-safe;
+  # macOS runner keeps parity with the target OS.
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: zsh test/run.zsh
+
+  # Layer-1 manifest validation: resolve every brew/cask/tap token against real
+  # Homebrew (present on macOS runners). Catches wrong tokens before a pristine
+  # E2E run ever boots.
+  manifests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: zsh test/validate_manifests.zsh
