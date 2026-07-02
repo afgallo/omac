@@ -1,7 +1,12 @@
 # omac `launcher` module — pre-spec decisions
 
-**Status:** Brainstorm paused (building `theme` first) · **Date:** 2026-07-02 ·
+**Status:** Superseded by `2026-07-02-omac-launcher-design.md` · **Date:** 2026-07-02 ·
 **Parent:** `2026-06-18-omac-design.md` (module 4 of 6)
+
+> **Superseded (2026-07-02):** the launcher brainstorm resumed and produced the approved design spec
+> `2026-07-02-omac-launcher-design.md`. That spec **defers pillar 1 (omac Script Commands / "Omarchy
+> Menu") to v1.1/v2** and builds v1 as pillar 2 only (guided Raycast activation). Read the design
+> spec, not this doc, for the current plan; this file is kept for the decision history.
 
 ## Why this doc exists
 
