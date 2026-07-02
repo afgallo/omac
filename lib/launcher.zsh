@@ -63,3 +63,29 @@ omac::launcher::restore_spotlight_hotkey() {
     '{ enabled = 1; value = { parameters = ( 65535, 49, 1048576 ); type = standard; }; }'
   omac::launcher::apply_hotkey_settings
 }
+
+# Guided activation: open Raycast and the settings panes, then print the manual
+# steps macOS/Raycast forbid scripting.
+omac::launcher::activate() {
+  omac::info "opening Raycast"
+  open -a Raycast
+  omac::info "opening the settings panes to finish setup"
+  open "x-apple.systempreferences:com.apple.preference.keyboard"
+  open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+  omac::info "manual steps (GUI-only):"
+  omac::log "1. In Raycast, set the launcher hotkey to ⌘Space."
+  omac::log "2. In Raycast, enable Clipboard History (and give it a hotkey)."
+  omac::log "3. Grant Raycast Accessibility in System Settings > Privacy."
+  omac::ok "launcher activated (finish the 3 manual steps above)"
+}
+
+# Non-mutating status: is Raycast installed / running, and is ⌘Space freed?
+omac::launcher::status() {
+  local inst run freed
+  omac::launcher::raycast_present && inst=yes || inst=no
+  pgrep -x Raycast >/dev/null 2>&1 && run=yes || run=no
+  omac::launcher::spotlight_hotkey_enabled && freed=no || freed=yes
+  printf "%-20s %s\n" "Raycast installed:" "$inst"
+  printf "%-20s %s\n" "Raycast running:"   "$run"
+  printf "%-20s %s\n" "⌘Space freed:"      "$freed"
+}
