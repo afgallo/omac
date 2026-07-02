@@ -11,6 +11,10 @@
 : ${OMAC_ACTIVE_THEME:=""}
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
 : ${OMAC_WM:="$OMAC_HOME/wm"}
+# launcher: internal seams (not user-facing). Raycast ships no PATH binary, so we
+# detect its app bundle; activateSettings is a fixed private-framework binary.
+: ${OMAC_RAYCAST_APP:="/Applications/Raycast.app"}
+: ${OMAC_ACTIVATE_SETTINGS:="/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings"}
 
 omac::prefix() {
   if [[ -n "${OMAC_PREFIX:-}" ]]; then
