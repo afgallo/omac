@@ -7,6 +7,8 @@
 : ${OMAC_CURRENT:="$OMAC_CONFIG/current"}
 : ${OMAC_THEMES:="$OMAC_HOME/themes"}
 : ${OMAC_TEMPLATES:="$OMAC_HOME/templates"}
+: ${OMAC_DEFAULT_THEME:="tokyo-night"}
+: ${OMAC_ACTIVE_THEME:=""}
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
 : ${OMAC_WM:="$OMAC_HOME/wm"}
 
