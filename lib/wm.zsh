@@ -27,7 +27,7 @@ omac::wm::deploy_sketchybar() {
   local f rel
   for f in "$src"/**/*(.); do
     rel="${f#$src/}"
-    omac::install_file "$f" "$dest/$rel"
+    omac::install_file "$f" "$dest/$rel" || return  # decline aborts the deploy
   done
   chmod +x "$dest/sketchybarrc" "$dest"/plugins/*(.N) 2>/dev/null
   return 0
@@ -112,8 +112,10 @@ omac::wm::install() {
     omac::info "run: omac software install"
     return 1
   fi
-  omac::wm::deploy_aerospace
-  omac::wm::deploy_sketchybar
+  # A declined overwrite aborts here — don't apply tweaks or activate a
+  # half-deployed config.
+  omac::wm::deploy_aerospace  || return
+  omac::wm::deploy_sketchybar || return
   omac::wm::apply_tweaks
   omac::wm::activate
   omac::ok "wm installed"

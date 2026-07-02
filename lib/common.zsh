@@ -31,8 +31,9 @@ omac::path_contains() {      # omac::path_contains <dir>
 
 # Deploy a file idempotently and non-destructively (pattern mined from omakos'
 # config scripts): absent → copy; byte-identical → skip; differing → warn and
-# prompt, backing the old file aside before overwrite. Used by later modules
-# (software/theme/dotfiles).
+# prompt, backing the old file aside before overwrite. Declining the prompt is
+# treated as an abort: the helper returns non-zero so callers stop rather than
+# silently skip the file. Used by later modules (software/theme/dotfiles).
 omac::install_file() {       # omac::install_file <src> <dest>
   local src="$1" dest="$2"
   mkdir -p "${dest:h}"
@@ -45,10 +46,10 @@ omac::install_file() {       # omac::install_file <src> <dest>
   omac::warn "${dest} differs from the omac version"
   if omac::confirm "overwrite ${dest:t}? (a backup is kept)"; then
     omac::backup_path "$dest"
-    cp "$src" "$dest"; omac::ok "installed ${dest:t}"
-  else
-    omac::log "kept existing ${dest:t}"
+    cp "$src" "$dest"; omac::ok "installed ${dest:t}"; return 0
   fi
+  omac::error "aborted: ${dest:t} not overwritten"
+  return 1
 }
 
 # Rename an existing path aside with a timestamp — no data loss on overwrite.

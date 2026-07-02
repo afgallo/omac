@@ -33,4 +33,18 @@ present="$([[ -f "$XDG_CONFIG_HOME/sketchybar/sketchybarrc" ]] && print yes || p
 check "install deployed sketchybar" "yes" "$present"
 contains "install applied a tweak"   "write NSGlobalDomain KeyRepeat" "$(<"$DEFAULTS_LOG")"
 contains "install ran activation"    "Privacy_Accessibility"          "$(<"$OPEN_LOG")"
+
+# Declining an overwrite must abort the whole install, not silently skip the
+# file and press on. Stub confirm to a deterministic "no" (real confirm reads
+# /dev/tty, which is non-deterministic under the runner), then make the source
+# differ so deploy hits the prompt.
+omac::confirm() { return 1 }
+print -r -- "start-at-login = false" > "$OMAC_WM/aerospace/aerospace.toml"
+: > "$DEFAULTS_LOG"; : > "$OPEN_LOG"
+omac::wm::install >/dev/null 2>&1
+check "declined overwrite aborts install" "1" "$?"
+contains "existing config left intact" "start-at-login = true" \
+  "$(<"$XDG_CONFIG_HOME/aerospace/aerospace.toml")"
+check "abort skips tweaks"     "" "$(<"$DEFAULTS_LOG")"
+check "abort skips activation" "" "$(<"$OPEN_LOG")"
 finish
