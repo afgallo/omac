@@ -26,3 +26,49 @@ omac::software::is_group() {     # <group>
   done
   return 1
 }
+
+# Install one group. `runtimes` uses the mise driver; every other group is a
+# plain `brew bundle` over its Brewfile. Returns the underlying command status.
+omac::software::install_group() {   # <group>
+  local group="$1"
+  if [[ "$group" == "runtimes" ]]; then
+    omac::software::install_runtimes
+    return $?
+  fi
+  local file; file="$(omac::software::group_file "$group")"
+  if [[ ! -f "$file" ]]; then
+    omac::error "no such group: $group"
+    return 1
+  fi
+  omac::require_cmd brew || return 1
+  omac::info "installing group: $group"
+  brew bundle --file="$file"
+}
+
+# Ensure mise is present, then apply every runtimes.manifest entry in one
+# `mise use -g` call (records the pin and installs it — idempotent).
+omac::software::install_runtimes() {
+  omac::require_cmd brew || return 1
+  if ! command -v mise >/dev/null 2>&1; then
+    omac::info "installing mise"
+    brew install mise || return 1
+  fi
+  local manifest="$OMAC_SOFTWARE/runtimes.manifest"
+  if [[ ! -f "$manifest" ]]; then
+    omac::warn "no runtimes.manifest; skipping runtimes"
+    return 0
+  fi
+  local -a tools
+  local line tok
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"          # drop trailing comment
+    tok=(${=line})              # word-split; single token per manifest line
+    (( ${#tok} )) && tools+=("${tok[1]}")
+  done < "$manifest"
+  if (( ! ${#tools} )); then
+    omac::warn "runtimes.manifest is empty"
+    return 0
+  fi
+  omac::info "installing runtimes: ${tools[*]}"
+  mise use -g "${tools[@]}"
+}
