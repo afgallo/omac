@@ -92,3 +92,18 @@ omac::software::install_all() {
   omac::ok "software: all groups installed"
   return 0
 }
+
+# Non-mutating status for `list`: prints "satisfied" or "missing".
+omac::software::group_status() {   # <group>
+  local group="$1"
+  if [[ "$group" == "runtimes" ]]; then
+    command -v mise >/dev/null 2>&1 && print -r -- "satisfied" || print -r -- "missing"
+    return 0
+  fi
+  local file; file="$(omac::software::group_file "$group")"
+  if command -v brew >/dev/null 2>&1 && brew bundle check --file="$file" >/dev/null 2>&1; then
+    print -r -- "satisfied"
+  else
+    print -r -- "missing"
+  fi
+}
