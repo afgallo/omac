@@ -8,6 +8,7 @@
 : ${OMAC_THEMES:="$OMAC_HOME/themes"}
 : ${OMAC_TEMPLATES:="$OMAC_HOME/templates"}
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
+: ${OMAC_WM:="$OMAC_HOME/wm"}
 
 omac::prefix() {
   if [[ -n "${OMAC_PREFIX:-}" ]]; then
