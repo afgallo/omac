@@ -86,3 +86,20 @@ omac::wm::activate() {
   open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
   omac::ok "wm activated (grant AeroSpace Accessibility to finish first run)"
 }
+
+# Non-mutating status for `omac wm status`: is each component deployed (config
+# present) and installed (binary on PATH)?
+omac::wm::status() {
+  local cfg; cfg="$(omac::wm::config_dir)"
+  local name file dep inst
+  printf "%-12s %-9s %s\n" "COMPONENT" "DEPLOYED" "INSTALLED"
+  for name in aerospace sketchybar; do
+    case "$name" in
+      aerospace)  file="$cfg/aerospace/aerospace.toml" ;;
+      sketchybar) file="$cfg/sketchybar/sketchybarrc"  ;;
+    esac
+    [[ -f "$file" ]] && dep=yes || dep=no
+    command -v "$name" >/dev/null 2>&1 && inst=yes || inst=no
+    printf "%-12s %-9s %s\n" "$name" "$dep" "$inst"
+  done
+}
