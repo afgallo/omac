@@ -1,0 +1,9 @@
+# Shell tools — the daily-driver CLI layer.
+brew "fzf"
+brew "zoxide"
+brew "ripgrep"
+brew "bat"
+brew "eza"
+brew "fd"
+brew "git-delta"
+brew "starship"

@@ -6,9 +6,10 @@ if command -v git >/dev/null 2>&1 && [[ -d "$OMAC_HOME/.git" ]]; then
   git -C "$OMAC_HOME" pull --ff-only || omac::warn "git pull skipped/failed; continuing"
 fi
 
-if [[ -f "$OMAC_HOME/Brewfile" ]] && command -v brew >/dev/null 2>&1; then
-  omac::info "running brew bundle"
-  brew bundle --file="$OMAC_HOME/Brewfile" || omac::warn "brew bundle had issues; continuing"
+if command -v brew >/dev/null 2>&1; then
+  source "$OMAC_HOME/lib/software.zsh"
+  omac::info "installing software"
+  omac::software::install_all || omac::warn "some software groups had issues; continuing"
 fi
 
 omac::migrate || return 1
