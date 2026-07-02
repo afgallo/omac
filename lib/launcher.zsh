@@ -89,3 +89,16 @@ omac::launcher::status() {
   printf "%-20s %s\n" "Raycast running:"   "$run"
   printf "%-20s %s\n" "⌘Space freed:"      "$freed"
 }
+
+# Orchestrate the guided first-run: guard Raycast installed, free ⌘Space, then
+# run guided activation.
+omac::launcher::install() {
+  if ! omac::launcher::raycast_present; then
+    omac::error "Raycast must be installed first"
+    omac::info "run: omac software install"
+    return 1
+  fi
+  omac::launcher::free_spotlight_hotkey
+  omac::launcher::activate
+  omac::ok "launcher installed"
+}
