@@ -1,5 +1,17 @@
 # omac `theme` module — Implementation Plan
 
+> **Amendment (2026-07-02):** this plan is a historical execution record. Four scope changes landed
+> after it ran and are authoritative in `specs/2026-07-02-omac-theme-design.md`, superseding the
+> matching parts below; a separate follow-up implementation plan carries the code:
+> 1. **Zed theming dropped** — no OOB coverage + no install CLI. Remove the `zed` key from every
+>    `apps.toml` and all Zed references here.
+> 2. **bat implemented** — `omac::theme::apply_bat` writes a managed `--theme="<bat name>"` block into
+>    `~/.config/bat/config`.
+> 3. **git-delta implemented** — `omac::theme::apply_delta` runs `git config --global
+>    delta.syntax-theme "<bat name>"` (delta reuses the `bat` name; no separate key).
+> 4. **VS Code/Cursor path fixed** — `apply_vscode` writes
+>    `~/Library/Application Support/{Code,Cursor}/User/settings.json`, NOT `~/.config`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the `omac theme` module — a closed set of 10 bundled, switchable desktop themes where `omac theme set <name>` restyles Ghostty, Neovim, VS Code, btop, SketchyBar, macOS light/dark appearance, and the wallpaper at once, offline.

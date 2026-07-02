@@ -1,0 +1,91 @@
+site_name: omac
+site_description: Omarchy-style, keyboard-driven, fully-themed desktop for macOS.
+site_url: https://afgallo.github.io/omac/
+repo_url: https://github.com/afgallo/omac
+repo_name: afgallo/omac
+copyright: Built for macOS on Apple Silicon.
+
+docs_dir: docs
+exclude_docs: |
+  superpowers/
+
+theme:
+  name: material
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Follow system
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Light
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Dark
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra_css:
+  - assets/extra.css
+  - assets/asciinema-player.min.css
+
+extra_javascript:
+  - assets/asciinema-player.min.js
+  - assets/player-init.js
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Requirements: getting-started/requirements.md
+      - Install: getting-started/install.md
+      - First run: getting-started/first-run.md
+  - Commands:
+      - Overview: commands/index.md
+      - install: commands/install.md
+      - software: commands/software.md
+      - wm: commands/wm.md
+      - theme: commands/theme.md
+      - launcher: commands/launcher.md
+      - update: commands/update.md
+      - doctor: commands/doctor.md
+      - uninstall: commands/uninstall.md
+      - version & path: commands/misc.md
+  - Themes: themes/index.md
+  - Software: software/index.md
+  - Window Management: window-management/index.md
+  - Architecture: architecture/index.md
+  - Contributing: contributing/index.md

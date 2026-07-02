@@ -1,6 +1,6 @@
 # omac `launcher` module — design
 
-**Status:** Approved design · **Date:** 2026-07-02 · **Parent:** `2026-06-18-omac-design.md` (module 4 of 6)
+**Status:** Approved design · **Date:** 2026-07-02 · **Parent:** `2026-06-18-omac-design.md` (module 4 of 5)
 
 ## What this is
 

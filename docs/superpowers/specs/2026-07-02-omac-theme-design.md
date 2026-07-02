@@ -1,6 +1,6 @@
 # omac `theme` module — design
 
-**Status:** Approved design · **Date:** 2026-07-02 · **Parent:** `2026-06-18-omac-design.md` (module 5 of 6)
+**Status:** Approved design · **Date:** 2026-07-02 · **Parent:** `2026-06-18-omac-design.md` (module 5 of 5)
 
 ## What this is
 
@@ -62,7 +62,7 @@ built-in themes** wherever possible; palette derivation only where nothing built
 
 | Class | How it themes | Targets |
 |---|---|---|
-| **A · Named built-in** | write a theme *name*; the app supplies the colors | Ghostty (`theme=`), VS Code/Cursor (extension + `workbench.colorTheme`), Zed, bat, git-delta |
+| **A · Named built-in** | write a theme *name*; the app supplies the colors | Ghostty (`theme=`), VS Code/Cursor (extension + `workbench.colorTheme`), bat, git-delta |
 | **B · Ported drop-in file** | reference/copy a real file the app reads | Neovim (LazyVim plugin spec), btop (`btop.theme`) |
 | **C · Palette-derived** | render from `colors.toml` | SketchyBar `colors.sh`, macOS light/dark appearance, wallpaper selection |
 
@@ -74,8 +74,12 @@ built-in themes** wherever possible; palette derivation only where nothing built
     otherwise render a Ghostty config from `colors.toml` (`foreground`/`background`/`cursor`/
     `selection-*`/`palette = 0=#…`). Either way Ghostty is themed for every theme.
 - **Best-effort (themed if a built-in exists, else left at default):** **Cursor** (VS Code fork; same
-  mechanism, gated on the `cursor` CLI), **Zed**, **bat**, **git-delta**. A missing binary or missing
-  built-in name skips that one target with a warning — it never aborts the switch.
+  mechanism, gated on the `cursor` CLI), **bat**, **git-delta**. A missing binary or missing built-in
+  name skips that one target with a warning — it never aborts the switch.
+
+> **Zed dropped (2026-07-02):** Zed ships only One Dark/Light as true built-ins (the rest are
+> extensions) and has no stable install-extension CLI, so there is no out-of-the-box path to theme it
+> across the set. Zed theming is out of scope; the `zed` key is removed from `apps.toml`.
 
 ## Theme storage layout (`themes/<name>/`)
 
@@ -105,19 +109,20 @@ themes/tokyo-night/
 
 `vscode.json`, `neovim.lua`, `btop.theme`, and `colors.toml` already carry everything the first-class
 and class-B/C targets need. `apps.toml` adds only the built-in *names* for the remaining class-A
-best-effort targets, so no new format is needed for the ported files:
+best-effort targets (Ghostty, bat, and delta), so no new format is needed for the ported files. It
+uses **flat `key = "value"` lines** (not sectioned TOML) so one parser serves both `colors.toml` and
+`apps.toml`:
 
 ```toml
 # themes/tokyo-night/apps.toml
-[ghostty] name = "tokyonight"        # built-in name; omitted → Ghostty renders from colors.toml
-[zed]     name = "Tokyo Night"       # optional; omitted → Zed left at default
-[bat]     name = "TwoDark"           # optional; omitted → bat left at default
-[delta]   syntax_theme = "TwoDark"   # optional; omitted → delta left at default
+ghostty = "TokyoNight"   # built-in name; omitted → Ghostty renders from colors.toml
+bat     = "TwoDark"      # optional; omitted → bat AND delta left at default
 ```
 
 Every key is optional. A missing key means "no built-in for this theme → skip that target" (except
-Ghostty, which falls back to `colors.toml` rendering). The exact names are authored during
-implementation and **verified against `ghostty +list-themes`, Zed's built-in theme list, and
+Ghostty, which falls back to `colors.toml` rendering). **git-delta reuses the `bat` name** — delta's
+`syntax-theme` shares bat's theme namespace, so no separate `delta` key exists. The exact names are
+authored during implementation and **verified against `ghostty +list-themes` and
 `bat --list-themes`** — the design guarantees the *mechanism*, not a specific name string.
 
 ### VS Code / Cursor extension map (concrete, from the ported `vscode.json`)
@@ -171,9 +176,13 @@ Makes every bundled theme switchable. Parallel to `omac wm install`.
      from `colors.toml`.
    - **SketchyBar:** overwrite `~/.config/sketchybar/colors.sh` (`BAR_COLOR`/`LABEL_COLOR`/
      `ACCENT_COLOR`) rendered from `colors.toml` (`background`/`foreground`/`accent`), as the `0xAARRGGBB` format the seam uses.
-   - **VS Code / Cursor:** set `workbench.colorTheme` in `settings.json` (managed JSON edit) to the
-     table's value; Cursor only if present.
-   - **Zed / bat / delta:** apply the `apps.toml` name where present, else skip.
+   - **VS Code / Cursor:** set `workbench.colorTheme` (managed JSON edit) to the table's value; Cursor
+     only if its config dir is present. **Path note:** VS Code and Cursor are *not* XDG on macOS —
+     omac writes `~/Library/Application Support/{Code,Cursor}/User/settings.json`, not `~/.config`.
+   - **bat:** where the `apps.toml` `bat` name is present, write an omac-managed
+     `--theme="<name>"` block into `~/.config/bat/config`; else leave bat at its default.
+   - **git-delta:** where the `bat` name is present, set `git config --global delta.syntax-theme
+     "<name>"` (delta reuses the bat name); else leave delta at its default.
 4. **macOS appearance:** if `themes/<name>/light.mode` exists → light, else dark, via
    `osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to <bool>'`. Applies live.
 5. **Wallpaper:** set the desktop picture to the theme's **first** background (lowest sorted
@@ -199,10 +208,12 @@ All logic lives here; `cmd/theme/*` stay thin. Functions namespaced `omac::theme
 | `omac::theme::is_light` | Return 0 if `themes/<name>/light.mode` exists. |
 | `omac::theme::current` | Print the active theme (resolve the `current` symlink target's basename; fall back to `$OMAC_ACTIVE_THEME`). |
 | `omac::theme::palette_get` | Read a key from a theme's `colors.toml` (simple `key = "value"` grep/parse; no TOML lib — pattern matches `runtimes.manifest`/`tweaks.conf` parsing). |
-| `omac::theme::apps_get` | Read a `[section] name = "…"` value from `apps.toml`; empty if absent. |
+| `omac::theme::apps_get` | Read a flat `key = "…"` value from `apps.toml`; empty if absent. |
 | `omac::theme::render_ghostty` | Write `omac-theme.conf` (built-in name or palette block). |
 | `omac::theme::render_sketchybar` | Overwrite `colors.sh` from the palette. |
-| `omac::theme::apply_vscode` | Install-guarded `colorTheme` edit for VS Code + Cursor. |
+| `omac::theme::apply_vscode` | Managed `colorTheme` edit for VS Code + Cursor at their macOS `~/Library/Application Support/{Code,Cursor}/User/settings.json` paths (Cursor only if present). |
+| `omac::theme::apply_bat` | Where the `bat` name is present, write an omac-managed `--theme="…"` block into `~/.config/bat/config`; else no-op. |
+| `omac::theme::apply_delta` | Where the `bat` name is present, `git config --global delta.syntax-theme "…"`; else no-op. |
 | `omac::theme::apply_appearance` | Toggle macOS dark mode from `light.mode`. |
 | `omac::theme::apply_wallpaper` | Set desktop picture to the first background. |
 | `omac::theme::wire` | The `install`-time managed-block/symlink wiring (Ghostty/Neovim/btop). |
@@ -212,8 +223,8 @@ All logic lives here; `cmd/theme/*` stay thin. Functions namespaced `omac::theme
 | `omac::theme::reload` | Re-apply the current theme (re-run `set` for the active name) without changing selection. |
 | `omac::theme::status`/`list` | Non-mutating list: each theme, `●` current, `☾` light. |
 
-Guards: a missing app binary (`code`, `cursor`, `bat`, `delta`, `sketchybar`) warns and skips that
-one target; it is never fatal (best-effort principle). An unknown theme name is a hard error.
+Guards: a missing app binary (`code`, `cursor`, `bat`, `git` for delta, `sketchybar`) warns and skips
+that one target; it is never fatal (best-effort principle). An unknown theme name is a hard error.
 
 ## CLI surface
 
@@ -239,7 +250,7 @@ consumed); `omac theme` (bare) falls to `cmd/theme.zsh` (depth 1) → usage; `om
 |---|---|
 | Unknown theme name | Hard error + `list`; non-zero. |
 | `code`/`cursor` CLI missing | Warn, skip VS Code/Cursor theming; the rest of the desktop still themes. |
-| `bat`/`delta`/`zed`/`sketchybar` missing | Warn, skip that one target; continue. |
+| `bat`/`git` (for delta)/`sketchybar` missing | Warn, skip that one target; continue. |
 | No built-in name for a best-effort target | Silently leave that app at its default (documented, not an error). |
 | Ghostty/Neovim/btop can't hot-reload on macOS | Not an error — `set` states new windows/instances pick it up. |
 | Conflicting existing managed block / config | Handled by `omac::ensure_block` (idempotent) / `omac::install_file` (diff + backup). |
@@ -263,9 +274,11 @@ Deploy targets derive from `${XDG_CONFIG_HOME:-$HOME/.config}` so tests redirect
 Follows the existing `test_*.zsh` harness (`check`/`contains`/`finish`; fake `OMAC_HOME` from
 symlinked `lib`/`bin`/`cmd` + `mktemp` dirs). Real system state must never be touched:
 
-- **Stub** `osascript`, `sketchybar`, `code`, `cursor`, `defaults`, `open`, `bat`, `delta` as scripts
+- **Stub** `osascript`, `sketchybar`, `code`, `cursor`, `defaults`, `open`, `bat`, `git` as scripts
   on a temp `PATH` that log their args and exit 0 (the `wm_stubs.zsh` approach; a `theme_stubs.zsh`
-  helper adds these).
+  helper adds these). VS Code/Cursor `settings.json` writes go to a temp
+  `Library/Application Support` root the test redirects (an `OMAC_APPSUPPORT`-style seam, settled in
+  the plan).
 - Point **`OMAC_THEMES`** at a temp fixture theme tree (2–3 fixture themes, one with `light.mode`,
   each with a small `colors.toml`, `apps.toml`, `neovim.lua`, `btop.theme`, `vscode.json`, and a
   couple of `backgrounds/` including an `omarchy.png` to prove exclusion) and **`XDG_CONFIG_HOME`** at
@@ -282,6 +295,9 @@ Assertions:
 - `omac theme set <light>` toggles appearance to **light** (assert the `osascript` dark-mode `false`).
 - Wallpaper selection ignores any `omarchy`-named background (assert the excluded file is never the
   chosen path).
+- For a fixture theme with a `bat` name, `omac theme set` writes a `--theme="…"` block into
+  `~/.config/bat/config` and calls `git config --global delta.syntax-theme "…"` (assert on the file
+  and the `git` stub log); a fixture with no `bat` name touches neither.
 - A stubbed-missing `code` makes VS Code theming warn-and-skip without failing the switch.
 - `omac theme list` marks the current theme and light themes; `omac theme current` prints the active
   name; unknown theme → non-zero; `omac theme` (bare) → usage, exit 0; `omac theme bogus` → non-zero.
@@ -292,12 +308,13 @@ For each of the 10 themes, from `~/Code/omarchy/themes/<name>/` into `themes/<na
 
 1. Copy `colors.toml`, `neovim.lua`, `btop.theme`, `vscode.json`, and `light.mode` (where present).
 2. Copy `backgrounds/`, excluding every filename containing `omarchy` (case-insensitive).
-3. Author `apps.toml` with verified `ghostty`/`zed`/`bat`/`delta` built-in names (omit unknowns).
+3. Author `apps.toml` with verified `ghostty` and `bat` built-in names (delta reuses the `bat` name);
+   omit unknowns.
 4. Do **not** copy `icons.theme`, `keyboard.rgb`, `hyprland.conf`, `waybar.css`, `chromium.theme`,
    `unlock.png`, `preview-unlock.png`, `preview.png`.
 
 ## Open questions
 
 - **Background exclusion reading** — confirm `oma-*` (not the word "omarchy") backgrounds are kept.
-- **Ghostty/Zed/bat built-in name strings** — verified during implementation against each tool's
-  theme list; the design fixes the mechanism, not the strings.
+- **Ghostty/bat built-in name strings** — verified during implementation against each tool's theme
+  list; the design fixes the mechanism, not the strings.

@@ -106,8 +106,10 @@ Independent sub-projects, each with its own spec → plan → build cycle. Build
    *(Omarchy: Navigation, Web Apps, Reminders/Notices/OCR/Dictation as extensions.)*
 5. **`theme`** — the orchestration layer above; ports the 19 themes + palette-derived Mac targets.
    *(Omarchy: Themes, Extra Themes, Making Your Own Theme, Backgrounds, Fonts.)*
-6. **`dotfiles`** — config storage/deploy substrate all modules write through. Mechanism chosen in
-   that sub-project's spec. *(Omarchy: Dotfiles.)*
+
+> **Scope note (2026-07-02):** a separate **`dotfiles`** module was dropped. Config deploy is handled
+> in-line by every module through the `bootstrap`-provided `omac::install_file` diff-and-backup helper,
+> so a dedicated storage/deploy substrate added no value. omac is five modules, not six.
 
 ## Reference implementations (to mine, not to follow)
 
@@ -122,7 +124,7 @@ are written:
 - **`wm`:** its `scripts/mac.sh` is a curated `defaults write` catalog (key-repeat, Finder,
   three-finger-drag, Dock animation removal, screenshots→folder, disable press-and-hold) — mine the
   individual settings for the "Common Tweaks / Input" surface; drop its unconditional `killall`.
-- **`theme` / `dotfiles`:** deploy configs through the `omac::install_file` diff-and-backup helper
+- **`theme`:** deploy configs through the `omac::install_file` diff-and-backup helper
   that `bootstrap` provides, not a blind `cp`.
 
 Deliberately *not* copied: its zip-download + `rm -rf` installer (omac uses a re-entrant git clone),
@@ -156,8 +158,7 @@ dictation or a Whisper tool). All small and Raycast-extension-shaped.
 
 `bootstrap` first (everything installs through it). `software` next (the rest needs the tools
 present). `wm` + `launcher` give a usable keyboard-driven desktop. `theme` is the payoff and
-depends on the apps from earlier modules existing. `dotfiles` is the substrate — its mechanism is
-decided early but it stabilizes as modules land. First sub-project to spec in detail: **`bootstrap`**.
+depends on the apps from earlier modules existing. First sub-project to spec in detail: **`bootstrap`**.
 
 > **Build-order note (2026-07-02):** after completing `wm`, we chose to build **`theme` (module 5)
 > before `launcher` (module 4)**. `theme` has no dependency on `launcher` — their Raycast surfaces are
@@ -169,6 +170,5 @@ decided early but it stabilizes as modules land. First sub-project to spec in de
 
 ## Open questions for sub-project specs
 
-- `dotfiles` mechanism: GNU Stow vs bare git repo vs custom symlink script (decided in `dotfiles` spec).
 - Exact `omac` CLI surface and subcommand grammar (decided in `bootstrap` spec).
 - Per-app reload mechanics on macOS (decided in `theme` spec).
