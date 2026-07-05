@@ -56,5 +56,9 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 
 ## Topbar
 
-SketchyBar renders workspaces, a clock, and a battery indicator. Its colors are owned by the
-[theme](../themes/index.md) layer, so it recolors with every `omac theme set`.
+SketchyBar renders workspace pills, a clock, and a battery indicator. Each workspace shows its
+number plus a Nerd Font glyph for every app with a window there; the focused workspace is a
+filled accent pill, and empty workspaces dim out. Battery and clock carry their own icons, and
+the battery glyph tracks the charge level (turning red when low, accent-colored while charging).
+All colors are owned by the [theme](../themes/index.md) layer, so the bar recolors with every
+`omac theme set`.

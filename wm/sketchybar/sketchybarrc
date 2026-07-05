@@ -1,37 +1,74 @@
 #!/usr/bin/env bash
 # omac — SketchyBar entry point (structure only). Colors live in colors.sh,
-# which the theme module will later own. Deployed to ~/.config/sketchybar/.
+# which the theme module owns (`omac theme set` rewrites it). Deployed to
+# ~/.config/sketchybar/. Per-item tones are derived from the three seam colors
+# by the plugins, so nothing here hard-codes a palette.
 source "$HOME/.config/sketchybar/colors.sh"
 
-sketchybar --bar height=32 position=top padding_left=8 padding_right=8 color="$BAR_COLOR"
+PLUGINS="$HOME/.config/sketchybar/plugins"
+source "$PLUGINS/icon_map.sh"   # omac::glyph — PUA glyphs by hex codepoint
 
+# Bar: a touch taller with breathing room; blur softens it over the wallpaper.
+sketchybar --bar height=36 position=top y_offset=0 \
+                 padding_left=10 padding_right=10 \
+                 blur_radius=30 color="$BAR_COLOR"
+
+# Defaults shared by every item: Nerd Font, subtle rounded pill geometry (only
+# drawn when an item turns background.drawing on), and comfortable padding.
 sketchybar --default icon.font="JetBrainsMono Nerd Font:Bold:14.0" \
                      label.font="JetBrainsMono Nerd Font:Bold:14.0" \
+                     icon.color="$LABEL_COLOR" \
                      label.color="$LABEL_COLOR" \
+                     background.height=26 \
+                     background.corner_radius=8 \
+                     background.drawing=off \
                      padding_left=4 padding_right=4
 
-# Workspace indicators, driven by AeroSpace's aerospace_workspace_change trigger.
-# Set label.color per item (not only via --default): on `sketchybar --reload`
-# the items already exist, so --default won't recolor them and a theme switch
-# would leave stale colors until the next aerospace trigger fires.
+# ── Left: omac logo ─────────────────────────────────────────────────────────
+sketchybar --add item logo left \
+           --set logo icon="$(omac::glyph f179)" icon.color="$ACCENT_COLOR" \
+                 icon.font="JetBrainsMono Nerd Font:Bold:16.0" \
+                 padding_left=6 padding_right=12 \
+                 click_script="open -a Finder"
+
+# ── Left: workspace pills ───────────────────────────────────────────────────
+# Driven by AeroSpace's aerospace_workspace_change trigger; the plugin also
+# refreshes app glyphs on front_app_switched. Colors are set per item inside the
+# plugin (not only via --default): on `sketchybar --reload` the items already
+# exist, so --default won't recolor them and a theme switch would leave stale
+# colors until the next trigger fires.
 sketchybar --add event aerospace_workspace_change
 for sid in 1 2 3 4 5 6; do
   sketchybar --add item space.$sid left \
-             --set space.$sid label="$sid" label.color="$LABEL_COLOR" \
+             --set space.$sid icon="$sid" label="" \
+                   icon.padding_left=9 icon.padding_right=4 \
+                   label.padding_left=0 label.padding_right=9 \
+                   padding_left=2 padding_right=2 \
+                   background.color="$ACCENT_COLOR" \
                    click_script="aerospace workspace $sid" \
-                   script="$HOME/.config/sketchybar/plugins/aerospace.sh $sid" \
-             --subscribe space.$sid aerospace_workspace_change
+                   script="$PLUGINS/aerospace.sh $sid" \
+             --subscribe space.$sid aerospace_workspace_change front_app_switched
 done
 
-# Battery on the right (percentage + charge state).
+# ── Right: clock (far right) then battery to its left ───────────────────────
+# Right-side items stack from the corner inward in add order, so clock added
+# first sits at the far right, with battery to its left.
+sketchybar --add item clock right \
+           --set clock update_freq=10 icon="$(omac::glyph f073)" \
+                 icon.color="$ACCENT_COLOR" \
+                 icon.padding_right=6 padding_left=8 padding_right=6 \
+                 script="$PLUGINS/clock.sh"
+
 sketchybar --add item battery right \
-           --set battery update_freq=120 label.color="$LABEL_COLOR" \
-                 script="$HOME/.config/sketchybar/plugins/battery.sh" \
+           --set battery update_freq=120 \
+                 icon.padding_right=6 padding_left=8 padding_right=8 \
+                 script="$PLUGINS/battery.sh" \
            --subscribe battery power_source_change system_woke
 
-# Clock on the right.
-sketchybar --add item clock right \
-           --set clock update_freq=10 label.color="$LABEL_COLOR" \
-                 script="$HOME/.config/sketchybar/plugins/clock.sh"
-
 sketchybar --update
+
+# Highlight the currently-focused workspace on load (before the first switch).
+if command -v aerospace >/dev/null 2>&1; then
+  sketchybar --trigger aerospace_workspace_change \
+             FOCUSED="$(aerospace list-workspaces --focused 2>/dev/null)"
+fi
