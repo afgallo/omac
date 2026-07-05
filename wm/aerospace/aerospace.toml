@@ -6,6 +6,13 @@ start-at-login = true
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
+# Notify SketchyBar when the focused workspace changes (native integration).
+# Must stay at the root: after a [table] header TOML would nest it (e.g. as
+# gaps.exec-on-workspace-change), which AeroSpace rejects as an unknown key.
+exec-on-workspace-change = ['/bin/bash', '-c',
+  'sketchybar --trigger aerospace_workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+
 # Gaps between windows and screen edges.
 [gaps]
 inner.horizontal = 8
@@ -14,11 +21,6 @@ outer.left       = 8
 outer.right      = 8
 outer.top        = 8
 outer.bottom     = 8
-
-# Notify SketchyBar when the focused workspace changes (native integration).
-exec-on-workspace-change = ['/bin/bash', '-c',
-  'sketchybar --trigger aerospace_workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE'
-]
 
 [mode.main.binding]
 # Move focus (vim keys) — Omarchy SUPER+SHIFT+H/J/K/L.
