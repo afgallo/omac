@@ -40,3 +40,16 @@ Each `themes/<name>/` directory holds two things:
 
 This hybrid — file-per-app where a port exists, palette-derived where it does not — is the heart
 of omac. See [Architecture](../architecture/index.md#the-theme-seam) for the mechanics.
+
+## Wallpapers
+
+Each theme carries one or more images in `themes/<name>/backgrounds/`, named by convention:
+
+```
+NN-name.ext        # zero-padded from 01
+```
+
+`01-` is the theme's **default** wallpaper — `omac theme set` applies the first file
+alphabetically, so `01-` always wins. Add extras as `02-`, `03-`, … When adding or
+reordering images, keep the numbering contiguous and make sure `01-` is the image that best
+represents the palette.

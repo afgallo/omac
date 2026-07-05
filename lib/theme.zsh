@@ -98,17 +98,12 @@ omac::theme::render_sketchybar() {   # <name> <dest-file>
   } > "$dest"
 }
 
-# Absolute path of the theme's default background. A theme may name its own via
-# an apps.toml `wallpaper = "file"` key (the numeric filename prefix is only a
-# tie-breaker, not intent — some ported themes sort a mismatched image first);
-# otherwise fall back to the first omarchy-free file.
+# Absolute path of the theme's default background. Backgrounds follow the
+# `NN-name.ext` convention (zero-padded from 01); `01-` is the default, so the
+# first omarchy-free file wins. See docs/themes for the naming contract.
 omac::theme::first_background() {    # <name>
   setopt local_options null_glob
   local dir="$OMAC_THEMES/$1/backgrounds" f
-  local pref; pref="$(omac::theme::toml_get "$OMAC_THEMES/$1/apps.toml" wallpaper)" || pref=""
-  if [[ -n "$pref" && -f "$dir/$pref" ]]; then
-    print -r -- "$dir/$pref"; return 0
-  fi
   local -a files
   for f in "$dir"/*(.); do
     [[ "${f:t:l}" == *omarchy* ]] && continue

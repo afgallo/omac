@@ -9,13 +9,12 @@ export OMAC_THEMES="$(mktemp -d)/themes"
 mkdir -p "$OMAC_THEMES/dark/backgrounds" "$OMAC_THEMES/lite/backgrounds" \
          "$OMAC_THEMES/pick/backgrounds"
 : > "$OMAC_THEMES/dark/backgrounds/omarchy.png"
-: > "$OMAC_THEMES/dark/backgrounds/1-wall.jpg"
+: > "$OMAC_THEMES/dark/backgrounds/01-wall.jpg"
 : > "$OMAC_THEMES/lite/light.mode"
-: > "$OMAC_THEMES/lite/backgrounds/1-day.jpg"
-# `pick` declares a non-first default wallpaper via apps.toml.
-: > "$OMAC_THEMES/pick/backgrounds/0-first.jpg"
-: > "$OMAC_THEMES/pick/backgrounds/9-chosen.jpg"
-print -r -- 'wallpaper = "9-chosen.jpg"' > "$OMAC_THEMES/pick/apps.toml"
+: > "$OMAC_THEMES/lite/backgrounds/01-day.jpg"
+# Convention: `01-` is the default (first sorted), extras follow.
+: > "$OMAC_THEMES/pick/backgrounds/01-chosen.jpg"
+: > "$OMAC_THEMES/pick/backgrounds/02-other.jpg"
 
 export XDG_CONFIG_HOME="$(mktemp -d)"
 export HOME="$(mktemp -d)"
@@ -33,12 +32,12 @@ contains "light mode false" "set dark mode to false" "$(<"$OSASCRIPT_LOG")"
 : > "$OSASCRIPT_LOG"
 omac::theme::apply_wallpaper dark >/dev/null 2>&1
 wlog="$(<"$WALLPAPER_LOG")"
-contains "wallpaper set to first bg" "1-wall.jpg" "$wlog"
+contains "wallpaper set to first bg" "01-wall.jpg" "$wlog"
 check "wallpaper via wallpaper CLI not osascript" "" "$(<"$OSASCRIPT_LOG")"
 check "wallpaper never omarchy" "no" "$([[ "$wlog" == *omarchy* ]] && print yes || print no)"
 
-# A theme may declare its default wallpaper; it wins over the first file.
-check "declared wallpaper chosen" "9-chosen.jpg" "$(omac::theme::first_background pick 2>/dev/null | xargs basename)"
+# Convention: the 01- file is the default (first sorted wins).
+check "01- background chosen" "01-chosen.jpg" "$(omac::theme::first_background pick 2>/dev/null | xargs basename)"
 
 # VS Code: create when absent, replace when present.
 vs="$OMAC_APPSUPPORT/Code/User/settings.json"
