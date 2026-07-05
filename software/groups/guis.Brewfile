@@ -13,3 +13,4 @@ tap  "nikitabobko/tap"
 cask "nikitabobko/tap/aerospace"
 tap  "FelixKratz/formulae"
 brew "FelixKratz/formulae/sketchybar"
+brew "wallpaper"                                # theme uses it to set the wallpaper (macOS 14+ broke the AppleScript API)

@@ -41,7 +41,7 @@ contains "ghostty theme name" "theme = tokyonight" "$(<"$XDG_CONFIG_HOME/ghostty
 contains "sketchybar rendered" "BAR_COLOR=0xff1a1b26" "$(<"$XDG_CONFIG_HOME/sketchybar/colors.sh")"
 contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$OMAC_APPSUPPORT/Code/User/settings.json")"
 contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
-contains "wallpaper applied" "1-wall.jpg" "$(<"$OSASCRIPT_LOG")"
+contains "wallpaper applied" "1-wall.jpg" "$(<"$WALLPAPER_LOG")"
 contains "sketchybar reloaded" "--reload" "$(<"$SKETCHYBAR_LOG")"
 contains "selection persisted" 'OMAC_ACTIVE_THEME="tokyo-night"' "$(<"$OMAC_CONFIG/config.zsh")"
 

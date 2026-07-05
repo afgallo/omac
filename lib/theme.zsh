@@ -98,10 +98,17 @@ omac::theme::render_sketchybar() {   # <name> <dest-file>
   } > "$dest"
 }
 
-# Absolute path of the theme's first background, skipping omarchy-named files.
+# Absolute path of the theme's default background. A theme may name its own via
+# an apps.toml `wallpaper = "file"` key (the numeric filename prefix is only a
+# tie-breaker, not intent — some ported themes sort a mismatched image first);
+# otherwise fall back to the first omarchy-free file.
 omac::theme::first_background() {    # <name>
   setopt local_options null_glob
   local dir="$OMAC_THEMES/$1/backgrounds" f
+  local pref; pref="$(omac::theme::toml_get "$OMAC_THEMES/$1/apps.toml" wallpaper)" || pref=""
+  if [[ -n "$pref" && -f "$dir/$pref" ]]; then
+    print -r -- "$dir/$pref"; return 0
+  fi
   local -a files
   for f in "$dir"/*(.); do
     [[ "${f:t:l}" == *omarchy* ]] && continue
@@ -123,12 +130,21 @@ omac::theme::apply_appearance() {    # <name>
     || omac::warn "could not set appearance (System Events)"
 }
 
-# Desktop wallpaper: the theme's first (omarchy-free) background. Live.
+# Desktop wallpaper: the theme's default background. Live.
+# macOS 14 Sonoma / 15 Sequoia broke the System Events `set picture` API (it
+# returns success but silently no-ops), so prefer the `wallpaper` CLI that
+# `software` installs for exactly this. Fall back to osascript where it's absent
+# (older macOS, or a minimal install without the wm/software layer).
 omac::theme::apply_wallpaper() {     # <name>
   local bg; bg="$(omac::theme::first_background "$1")" || { omac::warn "no background for $1"; return 0; }
   omac::info "wallpaper: ${bg:t}"
-  osascript -e "tell application \"System Events\" to set picture of every desktop to \"$bg\"" >/dev/null 2>&1 \
-    || omac::warn "could not set wallpaper"
+  if command -v wallpaper >/dev/null 2>&1; then
+    wallpaper set "$bg" >/dev/null 2>&1 || omac::warn "could not set wallpaper (wallpaper CLI)"
+  else
+    omac::warn "no 'wallpaper' CLI — wallpaper may not stick on macOS 14+ (run: omac software install)"
+    osascript -e "tell application \"System Events\" to set picture of every desktop to \"$bg\"" >/dev/null 2>&1 \
+      || omac::warn "could not set wallpaper"
+  fi
 }
 
 # Write workbench.colorTheme into one editor settings file (create/replace/insert).
