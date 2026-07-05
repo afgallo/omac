@@ -50,9 +50,9 @@ for sid in 1 2 3 4 5 6; do
              --subscribe space.$sid aerospace_workspace_change front_app_switched
 done
 
-# ── Right: clock (far right) then battery to its left ───────────────────────
+# ── Right: clock (far right), then battery, then network to its left ─────────
 # Right-side items stack from the corner inward in add order, so clock added
-# first sits at the far right, with battery to its left.
+# first sits at the far right, battery to its left, and network left of battery.
 sketchybar --add item clock right \
            --set clock update_freq=10 icon="$(omac::glyph f073)" \
                  icon.color="$ACCENT_COLOR" \
@@ -64,6 +64,14 @@ sketchybar --add item battery right \
                  icon.padding_right=6 padding_left=8 padding_right=8 \
                  script="$PLUGINS/battery.sh" \
            --subscribe battery power_source_change system_woke
+
+# Network (Wi-Fi / wired / offline). Polls on a short cadence and also refreshes
+# on the built-in wifi_change event and on wake, so it reacts to (dis)connects.
+sketchybar --add item network right \
+           --set network update_freq=10 \
+                 icon.padding_right=6 padding_left=8 padding_right=8 \
+                 script="$PLUGINS/network.sh" \
+           --subscribe network wifi_change system_woke
 
 sketchybar --update
 

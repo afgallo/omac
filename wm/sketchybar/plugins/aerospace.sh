@@ -9,6 +9,14 @@ source "$HOME/.config/sketchybar/plugins/icon_map.sh"
 
 sid="$1"
 
+# FOCUSED is provided by the aerospace_workspace_change trigger, but this same
+# script is also subscribed to front_app_switched (to refresh app glyphs) — that
+# event carries no FOCUSED, which would blank the highlight on every app switch.
+# Fall back to asking AeroSpace directly so the focused pill always stays lit.
+if [ -z "$FOCUSED" ] && command -v aerospace >/dev/null 2>&1; then
+  FOCUSED="$(aerospace list-workspaces --focused 2>/dev/null)"
+fi
+
 # Derived tones from the three theme-seam colors: a dimmed label (~40% alpha)
 # for empty spaces, and the bar color for text sitting on the accent pill.
 label="${LABEL_COLOR:-0xffcdd6f4}"
