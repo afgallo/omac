@@ -16,9 +16,12 @@ omac::confirm() {            # omac::confirm <prompt> ; OMAC_YES=1 auto-accepts
   [[ "${OMAC_YES:-0}" == 1 ]] && return 0
   # Read from the controlling terminal, not stdin: under `curl … | zsh` stdin is
   # the script itself, so a plain `read` never reaches the user. No tty (CI /
-  # non-interactive) → fail safe to "no".
+  # non-interactive) → fail safe to "no". Print the prompt ourselves: zsh
+  # suppresses `read`'s own prompt in a non-interactive shell (a script), so
+  # relying on `read "var?prompt"` would leave the user staring at a blank line.
   local reply
-  read -r "reply?$1 [y/N] " </dev/tty 2>/dev/null || return 1
+  print -n -- "$1 [y/N] " >/dev/tty 2>/dev/null || return 1
+  read -r reply </dev/tty 2>/dev/null || return 1
   [[ "$reply" == [yY]* ]]
 }
 
@@ -43,12 +46,12 @@ omac::install_file() {       # omac::install_file <src> <dest>
   if cmp -s "$src" "$dest"; then
     omac::log "up to date: ${dest:t}"; return 0
   fi
-  omac::warn "${dest} differs from the omac version"
-  if omac::confirm "overwrite ${dest:t}? (a backup is kept)"; then
+  omac::warn "${dest} already exists and differs from omac's version"
+  if omac::confirm "Overwrite it with omac's version? Your current file is backed up first; answer N to keep yours."; then
     omac::backup_path "$dest"
     cp "$src" "$dest"; omac::ok "installed ${dest:t}"; return 0
   fi
-  omac::error "aborted: ${dest:t} not overwritten"
+  omac::error "kept your ${dest:t} — omac's version was not installed"
   return 1
 }
 

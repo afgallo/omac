@@ -80,8 +80,13 @@ omac::wm::activate() {
   omac::info "starting sketchybar service"
   brew services start sketchybar
   # AeroSpace start-at-login is set in aerospace.toml; reload if it is running.
-  command -v aerospace   >/dev/null 2>&1 && aerospace reload-config 2>/dev/null
-  command -v sketchybar  >/dev/null 2>&1 && sketchybar --reload 2>/dev/null
+  # Capture output so a config error surfaces as one clean line instead of a raw
+  # dump — and so we don't imply success when the reload actually failed.
+  local out
+  if command -v aerospace >/dev/null 2>&1; then
+    out="$(aerospace reload-config 2>&1)" || omac::warn "AeroSpace config not reloaded: ${out##*$'\n'}"
+  fi
+  command -v sketchybar >/dev/null 2>&1 && sketchybar --reload >/dev/null 2>&1
   omac::info "opening Accessibility settings — grant AeroSpace access there"
   open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
   omac::ok "wm activated (grant AeroSpace Accessibility to finish first run)"
