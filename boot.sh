@@ -28,6 +28,13 @@ if ! xcode-select -p >/dev/null 2>&1; then
 fi
 
 # --- Homebrew ---
+# Homebrew's installer needs a TTY to prompt for the sudo password. Piping this script into a
+# shell leaves stdin as the pipe, so the installer runs non-interactively, can't prompt, and dies
+# with a misleading "needs to be an Administrator" error. Fail early with an actionable message.
+if ! command -v brew >/dev/null 2>&1 && [[ ! -t 0 ]]; then
+  abort "run boot.sh from a terminal, not a pipe:
+  curl -fsSL https://raw.githubusercontent.com/afgallo/omac/main/boot.sh -o /tmp/boot.sh && zsh /tmp/boot.sh"
+fi
 if ! command -v brew >/dev/null 2>&1; then
   print -r -- "→ installing Homebrew"
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \

@@ -13,8 +13,12 @@ top of* macOS — not a distro — so it runs safely on your existing Mac.
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/afgallo/omac/main/boot.sh | zsh
+curl -fsSL https://raw.githubusercontent.com/afgallo/omac/main/boot.sh -o /tmp/boot.sh && zsh /tmp/boot.sh
 ```
+
+Run it from a terminal — don't pipe it straight into `zsh`. Homebrew's installer needs a TTY to
+prompt for your `sudo` password; a pipe has no TTY, so it fails with a misleading "needs to be an
+Administrator" error.
 
 The bootstrap is idempotent: it preflights (Apple Silicon, macOS 14+), installs Xcode Command
 Line Tools and Homebrew if missing, clones the repo, and wires the `omac` CLI. Then open a new
