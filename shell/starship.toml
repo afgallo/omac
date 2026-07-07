@@ -12,6 +12,7 @@ palette = "omac"
 format = """
 $directory\
 $git_branch\
+$git_state\
 $git_status\
 $cmd_duration\
 $line_break\
@@ -32,11 +33,32 @@ truncate_to_repo  = true
 read_only         = " 󰌾"
 
 [git_branch]
-symbol = " "
+symbol = " "
 style  = "bold magenta"
 
+# Detailed dirty-tree state. Counts use ${count}; symbols are plain Unicode
+# (arrows / punctuation) rather than Nerd Font PUA glyphs so they render even
+# without a patched font. Single-quoted (TOML literal) strings avoid escape
+# wrangling: Starship treats `\[`, `\]`, `\$` as the literal characters.
 [git_status]
-style = "bold red"
+style      = "bold red"
+format     = '([\[$all_status$ahead_behind\]]($style) )'
+conflicted = '=${count}'
+ahead      = '⇡${count}'
+behind     = '⇣${count}'
+diverged   = '⇕⇡${ahead_count}⇣${behind_count}'
+up_to_date = ''
+untracked  = '?${count}'
+stashed    = '\$${count}'
+modified   = '!${count}'
+staged     = '+${count}'
+renamed    = '»${count}'
+deleted    = '✘${count}'
+
+# Rebase / merge / cherry-pick / bisect progress, e.g. `(REBASE 2/5)`.
+[git_state]
+style  = "bold yellow"
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
 
 [cmd_duration]
 min_time = 2000
@@ -44,13 +66,13 @@ style    = "yellow"
 format   = "took [$duration]($style) "
 
 [nodejs]
-symbol = " "
+symbol = " "
 [python]
-symbol = " "
+symbol = " "
 [rust]
-symbol = " "
+symbol = " "
 [golang]
-symbol = " "
+symbol = " "
 
 # >>> omac >>>
 # Placeholder palette — replaced on the first `omac theme set`. Keeps Starship

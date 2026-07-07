@@ -24,6 +24,9 @@ setopt INTERACTIVE_COMMENTS NO_BEEP
 # every shell start.
 [[ -d /opt/homebrew/share/zsh/site-functions ]] && \
   fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+# zsh-completions ships extra compdefs; must join fpath before compinit runs.
+[[ -d /opt/homebrew/share/zsh-completions ]] && \
+  fpath=(/opt/homebrew/share/zsh-completions $fpath)
 
 autoload -Uz compinit
 # Rebuild the completion dump at most once a day; otherwise load it cached
@@ -65,3 +68,19 @@ if command -v fzf >/dev/null 2>&1; then
   command -v fd >/dev/null 2>&1 && \
     export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 fi
+
+# --- Interactive plugins (order matters) ------------------------------------
+# Lean alternative to a framework: two brew-installed plugins sourced directly.
+# Autosuggestions offers a dim, history/completion-based ghost suggestion you
+# accept with → (End). It binds ZLE widgets, so it must come before the
+# highlighter below.
+if [[ -r /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'   # dim grey, theme-agnostic
+fi
+
+# syntax-highlighting rewraps every ZLE widget, so it MUST be the last plugin
+# sourced — after compinit, fzf, and autosuggestions — or it won't wrap them.
+[[ -r /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
