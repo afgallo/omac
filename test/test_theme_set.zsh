@@ -44,6 +44,10 @@ contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "01-wall.jpg" "$(<"$WALLPAPER_LOG")"
 contains "sketchybar reloaded" "--reload" "$(<"$SKETCHYBAR_LOG")"
 contains "selection persisted" 'OMAC_ACTIVE_THEME="tokyo-night"' "$(<"$OMAC_CONFIG/config.zsh")"
+# `set` self-heals Neovim: scaffolds LazyVim and links the themed plugin even
+# when the machine was never `install`-ed (regression: set-before-install).
+check "nvim theme plugin linked on set" "1" \
+  "$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-theme.lua" ]] && print 1 || print 0)"
 
 # Switching again updates the persisted value (no duplicate).
 mkdir -p "$OMAC_THEMES/nord/backgrounds"; cp "$OMAC_THEMES/tokyo-night/colors.toml" "$OMAC_THEMES/nord/colors.toml"

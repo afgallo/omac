@@ -271,7 +271,11 @@ omac::theme::set() {             # <name>
   omac::theme::apply_bat "$name"
   omac::theme::apply_delta "$name"
 
-  # 3c. Starship palette (best-effort): derived from colors.toml; no-op until
+  # 3c. Neovim (self-heal): scaffold LazyVim once if missing, keep the themed
+  #     plugin symlink in place. No-op after the first successful scaffold.
+  omac::theme::wire_nvim "$cfg"
+
+  # 3d. Starship palette (best-effort): derived from colors.toml; no-op until
   #     the shell module has seeded starship.toml.
   omac::theme::render_starship "$name"
 
@@ -354,13 +358,22 @@ omac::theme::bootstrap_lazyvim() {   # <cfg>
   fi
 }
 
+# Scaffold LazyVim (once) and point its themed plugin at the current theme.
+# Idempotent: bootstrap_lazyvim no-ops once <cfg>/nvim exists; ln -sfn is safe
+# to re-run. Callable from both first-run wiring and every `set` so a machine
+# themed via `set` before `install` still gets a real LazyVim base.
+omac::theme::wire_nvim() {   # <cfg>
+  local cfg="$1"
+  omac::theme::bootstrap_lazyvim "$cfg"
+  mkdir -p "$cfg/nvim/lua/plugins"
+  ln -sfn "$OMAC_CURRENT/neovim.lua" "$cfg/nvim/lua/plugins/omac-theme.lua"
+}
+
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).
 omac::theme::wire() {
   local cfg; cfg="$(omac::theme::config_dir)"
   omac::ensure_block "$cfg/ghostty/config" "config-file = $cfg/ghostty/omac-theme.conf"
-  omac::theme::bootstrap_lazyvim "$cfg"
-  mkdir -p "$cfg/nvim/lua/plugins"
-  ln -sfn "$OMAC_CURRENT/neovim.lua" "$cfg/nvim/lua/plugins/omac-theme.lua"
+  omac::theme::wire_nvim "$cfg"
   omac::ensure_block "$cfg/btop/btop.conf" "color_theme = \"$OMAC_CURRENT/btop.theme\""
   omac::ok "wired ghostty, neovim, btop"
 }
