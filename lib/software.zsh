@@ -27,6 +27,25 @@ omac::software::is_group() {     # <group>
   return 1
 }
 
+# Trust every third-party tap a Brewfile declares. Homebrew 6 turned on
+# HOMEBREW_REQUIRE_TAP_TRUST by default, so it refuses to load formulae/casks
+# from untrusted taps (e.g. nikitabobko/tap, FelixKratz/formulae). omac's
+# Brewfiles are curated by the user, so opting them in is safe. `brew trust`
+# records the tap in trust.json — idempotent. Older Homebrew lacks the
+# subcommand and does not enforce trust, so no-op there.
+omac::software::trust_taps() {   # <brewfile>
+  local file="$1" line
+  command -v brew >/dev/null 2>&1 || return 0
+  brew commands 2>/dev/null | grep -qx trust || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"                                  # drop trailing comment
+    [[ "$line" == *tap* ]] || continue
+    if [[ "$line" =~ 'tap[[:space:]]+"([^"]+)"' ]]; then
+      brew trust --tap "${match[1]}" >/dev/null 2>&1
+    fi
+  done < "$file"
+}
+
 # Install one group. `runtimes` uses the mise driver; every other group is a
 # plain `brew bundle` over its Brewfile. Returns the underlying command status.
 omac::software::install_group() {   # <group>
@@ -42,7 +61,10 @@ omac::software::install_group() {   # <group>
   fi
   omac::require_cmd brew || return 1
   omac::info "installing group: $group"
-  brew bundle --file="$file"
+  omac::software::trust_taps "$file"
+  # HOMEBREW_NO_ASK: Homebrew 6 made "ask mode" the default, prompting to
+  # confirm before installing dependencies. Keep the install non-interactive.
+  HOMEBREW_NO_ASK=1 brew bundle --file="$file"
 }
 
 # Ensure mise is present, then apply every runtimes.manifest entry in one
@@ -51,7 +73,7 @@ omac::software::install_runtimes() {
   omac::require_cmd brew || return 1
   if ! command -v mise >/dev/null 2>&1; then
     omac::info "installing mise"
-    brew install mise || return 1
+    HOMEBREW_NO_ASK=1 brew install mise || return 1   # non-interactive; see install_group
   fi
   local manifest="$OMAC_SOFTWARE/runtimes.manifest"
   if [[ ! -f "$manifest" ]]; then
@@ -69,6 +91,12 @@ omac::software::install_runtimes() {
     omac::warn "runtimes.manifest is empty"
     return 0
   fi
+  # Use mise's precompiled ruby (astral-sh/ruby-build binaries) instead of a
+  # source build. A from-source build needs libyaml/openssl dev headers that a
+  # fresh Mac lacks, so it dies configuring the psych extension. Precompiled is
+  # faster, dependency-free, and becomes mise's default in 2026.8.0. Idempotent;
+  # persists to ~/.config/mise/config.toml. Must run before `mise use -g`.
+  mise settings set ruby.compile false
   omac::info "installing runtimes: ${tools[*]}"
   mise use -g "${tools[@]}"
 }

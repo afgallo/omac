@@ -3,7 +3,7 @@ cask "obsidian"
 cask "lastpass"
 cask "typora"
 cask "localsend"
-cask "mpv"
+cask "stolendata-mpv"                           # formerly "mpv"; renamed upstream
 cask "flameshot"
 
 # Desktop environment — installed here; configured by the wm/launcher/theme modules.

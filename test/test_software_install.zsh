@@ -31,4 +31,5 @@ contains "mise use -g invoked" "use -g" "$mise_out"
 contains "mise got node@lts"   "node@lts" "$mise_out"
 contains "mise got python"     "python@3.13" "$mise_out"
 contains "mise skipped comment" "use -g node@lts python@3.13" "$mise_out"
+contains "ruby set to precompiled" "settings set ruby.compile false" "$mise_out"
 finish
