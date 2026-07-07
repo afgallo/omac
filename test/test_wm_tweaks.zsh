@@ -24,4 +24,12 @@ contains "wrote dock autohide" "write com.apple.dock autohide -bool true" "$dlog
 check "comment line skipped" "no" "$([[ "$dlog" == *comment* ]] && print yes || print no)"
 
 contains "caps remapped via hidutil" "UserKeyMapping" "$(<"$HIDUTIL_LOG")"
+
+# Persistence: a LaunchAgent must be written and bootstrapped so the remap
+# survives a reboot (hidutil alone is session-scoped).
+plist="$OMAC_LAUNCHAGENTS/com.omac.capsescape.plist"
+check "caps LaunchAgent written" "yes" "$([[ -f "$plist" ]] && print yes || print no)"
+contains "LaunchAgent runs hidutil"   "hidutil"        "$(<"$plist")"
+contains "LaunchAgent re-applies map" "UserKeyMapping" "$(<"$plist")"
+contains "LaunchAgent bootstrapped"   "bootstrap"      "$(<"$LAUNCHCTL_LOG")"
 finish

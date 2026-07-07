@@ -63,13 +63,18 @@ omac::theme::render_ghostty() {  # <name> <dest-file>
   local name="$1" dest="$2" dir="$OMAC_THEMES/$1"
   local builtin; builtin="$(omac::theme::toml_get "$dir/apps.toml" ghostty)" || builtin=""
   mkdir -p "${dest:h}"
+  # A Nerd Font so the Starship prompt's git/powerline glyphs actually render;
+  # omac installs it via software/groups/fonts.Brewfile. Emitted for both the
+  # built-in-theme and palette branches so it's present regardless of theme.
+  local font='font-family = "JetBrainsMono Nerd Font"'
   if [[ -n "$builtin" ]]; then
-    print -r -- "theme = $builtin" > "$dest"
+    print -rl -- "$font" "theme = $builtin" > "$dest"
     return 0
   fi
   # Palette fallback — Ghostty accepts hex without '#' for fg/bg/cursor.
   local pal="$dir/colors.toml" k v i
   {
+    print -r -- "$font"
     for k in foreground background; do
       v="$(omac::theme::toml_get "$pal" "$k")" && print -r -- "$k = ${v#\#}"
     done

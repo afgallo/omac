@@ -55,14 +55,52 @@ omac::wm::apply_tweaks() {
   omac::ok "tweaks applied"
 }
 
-# Map Caps Lock -> Escape (the user's Omarchy `caps:escape`). Session-scoped;
-# reboot persistence via a LaunchAgent is a v1.1 follow-up.
+# Map Caps Lock -> Escape (the user's Omarchy `caps:escape`). `hidutil` only
+# applies to the current login session, so we also install a LaunchAgent that
+# re-applies the mapping at every login — otherwise the remap vanishes on reboot.
+omac::wm::caps_mapping() {
+  print -r -- '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}'
+}
+
 omac::wm::remap_caps_escape() {
   command -v hidutil >/dev/null 2>&1 || return 0
   omac::info "remapping Caps Lock -> Escape"
-  hidutil property --set \
-    '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' \
-    >/dev/null
+  hidutil property --set "$(omac::wm::caps_mapping)" >/dev/null
+  omac::wm::install_caps_agent
+}
+
+# Write and load a per-user LaunchAgent that re-runs the hidutil remap at login,
+# so Caps Lock -> Escape survives reboots. Idempotent: the plist is rewritten
+# and the agent is re-bootstrapped on every call.
+omac::wm::install_caps_agent() {
+  local label="com.omac.capsescape"
+  local agents="${OMAC_LAUNCHAGENTS:-$HOME/Library/LaunchAgents}"
+  local plist="$agents/$label.plist"
+  mkdir -p "$agents"
+  cat > "$plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$label</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/hidutil</string>
+    <string>property</string>
+    <string>--set</string>
+    <string>$(omac::wm::caps_mapping)</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+PLIST
+  command -v launchctl >/dev/null 2>&1 || return 0
+  # Re-bootstrap so an existing agent picks up changes. bootout is a no-op (and
+  # errors) when nothing is loaded yet, so swallow its failure.
+  local domain="gui/$(id -u)"
+  launchctl bootout "$domain/$label" 2>/dev/null
+  launchctl bootstrap "$domain" "$plist" 2>/dev/null
+  omac::info "installed Caps->Escape LaunchAgent ($plist)"
 }
 
 # Reload both tools' configs (used by `omac wm reload` and after activation).
