@@ -82,6 +82,37 @@ omac::theme::render_ghostty() {  # <name> <dest-file>
   } > "$dest"
 }
 
+# Build the Starship `[palettes.omac]` TOML table from a theme's colors.toml.
+# Maps the base16-style palette to the semantic names shell/starship.toml uses.
+# Prints the table text (no file I/O); returns 1 only if colors.toml is unreadable.
+omac::theme::starship_palette() {   # <name>
+  local pal="$OMAC_THEMES/$1/colors.toml"
+  [[ -f "$pal" ]] || return 1
+  local pair nm key v
+  print -r -- "[palettes.omac]"
+  for pair in accent:accent fg:foreground bg:background \
+              black:color0 red:color1 green:color2 yellow:color3 \
+              blue:color4 magenta:color5 cyan:color6 white:color7 \
+              bright_black:color8; do
+    nm="${pair%%:*}"; key="${pair##*:}"
+    v="$(omac::theme::toml_get "$pal" "$key")" && print -r -- "$nm = \"$v\""
+  done
+  return 0   # a missing optional color (last loop iter) must not fail the block
+}
+
+# Starship: rewrite the managed [palettes.omac] block inside the user's
+# starship.toml with colors derived from the theme. No-op when the shell module
+# has not seeded starship.toml yet (the palette is meaningless without it), so
+# theme/shell install order does not matter.
+omac::theme::render_starship() {   # <name>
+  local f; f="$(omac::theme::config_dir)/starship.toml"
+  [[ -f "$f" ]] || return 0
+  local block; block="$(omac::theme::starship_palette "$1")" || return 0
+  omac::remove_block "$f"
+  omac::ensure_block "$f" "$block"
+  omac::info "starship palette: $1"
+}
+
 # SketchyBar colors.sh from the palette (bar=bg, label=fg, accent=accent).
 omac::theme::render_sketchybar() {   # <name> <dest-file>
   local dir="$OMAC_THEMES/$1" dest="$2" bg fg ac
@@ -239,6 +270,10 @@ omac::theme::set() {             # <name>
   # 3b. bat + git-delta (best-effort): both driven by the apps.toml `bat` name.
   omac::theme::apply_bat "$name"
   omac::theme::apply_delta "$name"
+
+  # 3c. Starship palette (best-effort): derived from colors.toml; no-op until
+  #     the shell module has seeded starship.toml.
+  omac::theme::render_starship "$name"
 
   # 4-5. Appearance + wallpaper.
   omac::theme::apply_appearance "$name"

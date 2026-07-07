@@ -11,6 +11,15 @@ fi
 omac::remove_block "$OMAC_PROFILE"
 omac::ok "removed shell integration from $OMAC_PROFILE"
 
+# Remove the interactive-shell blocks the `shell` module wrote (no-op if absent).
+typeset rc
+for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
+  if [[ -f "$rc" ]] && grep -qF '>>> omac >>>' "$rc" 2>/dev/null; then
+    omac::remove_block "$rc"
+    omac::ok "removed shell config from ${rc:t}"
+  fi
+done
+
 # Reverse the one system change launcher makes (re-enable Spotlight ⌘Space).
 # No-op if it was never freed; best-effort so a broken env can't block uninstall.
 source "$OMAC_HOME/lib/launcher.zsh"

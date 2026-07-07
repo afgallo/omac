@@ -8,6 +8,7 @@ omac is a single dispatcher, `omac <command> [<subcommand>] [args]`. Commands li
 |---|---|
 | [`install`](install.md) | Install or repair the omac CLI, shell integration, and base config |
 | [`software`](software.md) | Install curated software groups (brew + mise) |
+| [`shell`](shell.md) | Configure the interactive shell (aliases, tools, Starship prompt) |
 | [`wm`](wm.md) | Configure the desktop (AeroSpace + SketchyBar) and apply macOS tweaks |
 | [`theme`](theme.md) | Switch the desktop theme (terminal, editor, topbar, wallpaper) |
 | [`launcher`](launcher.md) | Guide Raycast first-run (free ⌘Space, hand-hold GUI steps) |

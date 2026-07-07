@@ -7,10 +7,11 @@
 : ${OMAC_CURRENT:="$OMAC_CONFIG/current"}
 : ${OMAC_THEMES:="$OMAC_HOME/themes"}
 : ${OMAC_TEMPLATES:="$OMAC_HOME/templates"}
-: ${OMAC_DEFAULT_THEME:="tokyo-night"}
+: ${OMAC_DEFAULT_THEME:="catppuccin"}
 : ${OMAC_ACTIVE_THEME:=""}
 : ${OMAC_APPSUPPORT:="$HOME/Library/Application Support"}  # VS Code/Cursor settings root (NOT XDG on macOS)
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
+: ${OMAC_SHELL:="$OMAC_HOME/shell"}
 : ${OMAC_WM:="$OMAC_HOME/wm"}
 # launcher: internal seams (not user-facing). Raycast ships no PATH binary, so we
 # detect its app bundle; activateSettings is a fixed private-framework binary.

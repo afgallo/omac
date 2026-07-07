@@ -11,6 +11,7 @@ modules build on each other:
 
 ```bash
 omac software install     # curated Homebrew groups + mise runtimes
+omac shell install        # wire zsh/bash aliases, tools, and the Starship prompt
 omac wm install           # AeroSpace + SketchyBar + macOS tweaks (guided)
 omac launcher install     # free ⌘Space and set up Raycast (guided)
 omac theme install        # wire apps, pre-install extensions, set the default theme

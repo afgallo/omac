@@ -54,4 +54,26 @@ bg="$(omac::theme::first_background named)"
 check "first background skips omarchy" "1-first.jpg" "${bg:t}"
 bg="$(omac::theme::first_background palette)"
 check "first background single" "0-only.png" "${bg:t}"
+
+# --- Starship palette --------------------------------------------------------
+# Fixture 'named' defines accent + color0 + color15; other colors are absent, so
+# this also proves a sparse palette still returns 0 and emits the keys it has.
+pal="$(omac::theme::starship_palette named)"
+check "starship_palette exits 0 with sparse colors" "0" "$?"
+contains "starship palette header" "[palettes.omac]"    "$pal"
+contains "starship palette accent" 'accent = "#7aa2f7"' "$pal"
+contains "starship palette black=color0" 'black = "#32344a"' "$pal"
+
+# render_starship no-ops when starship.toml is absent (shell not installed yet).
+export XDG_CONFIG_HOME="$(mktemp -d)"
+omac::theme::render_starship named
+check "render_starship no-op without file" "0" "$(test -f "$XDG_CONFIG_HOME/starship.toml" && print 1 || print 0)"
+
+# With a seeded starship.toml carrying a managed block, render replaces it.
+st="$XDG_CONFIG_HOME/starship.toml"
+{ print 'palette = "omac"'; print "# >>> omac >>>"; print "[palettes.omac]"; print 'accent = "placeholder"'; print "# <<< omac <<<"; } > "$st"
+omac::theme::render_starship named >/dev/null
+contains "render replaced palette block" 'accent = "#7aa2f7"' "$(<"$st")"
+check "render did not duplicate block" "1" "$(grep -c '>>> omac >>>' "$st")"
+check "render dropped placeholder" "0" "$(grep -c 'placeholder' "$st")"
 finish

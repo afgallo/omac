@@ -27,6 +27,8 @@ terminal and run `omac doctor`.
 ## What you get
 
 - **One-command theming** — `omac theme set <name>` propagates a palette to every app at once.
+- **Modern shell** — `omac shell install` wires zsh/bash with the Starship prompt, eza/bat/fd/
+  ripgrep aliases, zoxide, and fzf — all themed with the rest of the desktop.
 - **Keyboard-driven desktop** — AeroSpace tiling + 6 workspaces + a SketchyBar topbar.
 - **Declarative software** — curated Homebrew groups and `mise` runtimes, opt-in / opt-out.
 - **Idempotent installer** — a re-entrant `git`-clone bootstrap you can re-run any time.
@@ -37,6 +39,7 @@ terminal and run `omac doctor`.
 
 ```bash
 omac software install       # curated Homebrew groups + mise runtimes
+omac shell install          # Starship prompt + modern zsh/bash aliases and tools
 omac wm install             # AeroSpace + SketchyBar + macOS tweaks (guided)
 omac theme set kanagawa     # recolor the whole desktop
 omac help                   # list every command

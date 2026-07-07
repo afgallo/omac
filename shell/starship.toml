@@ -1,0 +1,64 @@
+# omac Starship prompt.
+#
+# Colors come from the `omac` palette. The `[palettes.omac]` table at the END of
+# this file is a managed block, rewritten by `omac theme set <name>` from the
+# theme's colors.toml — do NOT edit it by hand. Everything above it is yours to
+# customize; omac seeds this file once and never overwrites it.
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+palette = "omac"
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$cmd_duration\
+$line_break\
+$character\
+"""
+
+add_newline = true
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol   = "[❯](bold red)"
+vicmd_symbol   = "[❮](bold yellow)"
+
+[directory]
+style             = "bold blue"
+truncation_length = 3
+truncate_to_repo  = true
+read_only         = " 󰌾"
+
+[git_branch]
+symbol = " "
+style  = "bold magenta"
+
+[git_status]
+style = "bold red"
+
+[cmd_duration]
+min_time = 2000
+style    = "yellow"
+format   = "took [$duration]($style) "
+
+[nodejs]
+symbol = " "
+[python]
+symbol = " "
+[rust]
+symbol = " "
+[golang]
+symbol = " "
+
+# >>> omac >>>
+# Placeholder palette — replaced on the first `omac theme set`. Keeps Starship
+# from erroring on the `omac` palette reference before a theme is applied.
+[palettes.omac]
+blue    = "blue"
+magenta = "magenta"
+red     = "red"
+green   = "green"
+yellow  = "yellow"
+# <<< omac <<<

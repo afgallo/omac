@@ -75,6 +75,7 @@ nav:
       - Overview: commands/index.md
       - install: commands/install.md
       - software: commands/software.md
+      - shell: commands/shell.md
       - wm: commands/wm.md
       - theme: commands/theme.md
       - launcher: commands/launcher.md
