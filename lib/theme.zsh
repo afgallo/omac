@@ -175,6 +175,21 @@ omac::theme::first_background() {    # <name>
 
 # --- System appliers (side effects: osascript / editor settings) -------------
 
+# Send <signal> to every process whose executable basename is <name>.
+# pkill can't reach macOS app bundles: the kernel proc name it matches against
+# is the executable *path* truncated to 16 chars ("/Applications/Gh" for
+# Ghostty), so `pkill -x ghostty` silently signals nothing. ps reports the full
+# executable path, so match its basename and signal directly. Best-effort:
+# always returns 0 (nothing running is fine). `command kill` so tests can stub
+# the external kill instead of hitting the zsh builtin.
+omac::theme::signal_app() {      # <signal> <exe-basename>
+  local sig="$1" name="$2" pid comm
+  ps -axo pid=,comm= 2>/dev/null | while read -r pid comm; do
+    [[ "${comm:t:l}" == "${name:l}" ]] && command kill "-$sig" "$pid" 2>/dev/null
+  done
+  return 0
+}
+
 # macOS light/dark. Live via System Events.
 omac::theme::apply_appearance() {    # <name>
   local dark=true
@@ -317,14 +332,15 @@ omac::theme::set() {             # <name>
   # tmux: re-source the rendered colors into any running server (no-op if none).
   command -v tmux >/dev/null 2>&1 && tmux source-file "$cfg/tmux/omac-theme.conf" >/dev/null 2>&1
   # Ghostty: SIGUSR2 makes it re-read its config live (Ghostty >= 1.2; same
-  # mechanism Omarchy's theme-set uses). Non-zero when not running — ignore.
-  pkill -USR2 -x ghostty >/dev/null 2>&1 || true
+  # mechanism Omarchy's theme-set uses). Must go through signal_app — pkill
+  # can't see the macOS app-bundle process (see signal_app).
+  omac::theme::signal_app USR2 ghostty
   # btop: SIGUSR2 = reload config (btop >= 1.3.1), picking up the repointed
   # color_theme — exactly what omarchy-restart-btop does.
-  pkill -USR2 -x btop >/dev/null 2>&1 || true
+  omac::theme::signal_app USR2 btop
   # Neovim: SIGUSR1 fires the Signal autocmd registered by omac-themes.lua,
   # which re-reads the repointed theme symlink and re-applies the colorscheme.
-  pkill -USR1 -x nvim >/dev/null 2>&1 || true
+  omac::theme::signal_app USR1 nvim
 
   # 7. Persist.
   omac::theme::persist "$name"

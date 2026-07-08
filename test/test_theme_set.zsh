@@ -42,9 +42,14 @@ contains "ghostty theme name" "theme = tokyonight" "$(<"$XDG_CONFIG_HOME/ghostty
 contains "sketchybar rendered" "BAR_COLOR=0xff1a1b26" "$(<"$XDG_CONFIG_HOME/sketchybar/colors.sh")"
 contains "tmux colors rendered" 'status-style "bg=#1a1b26,fg=#a9b1d6"' "$(<"$XDG_CONFIG_HOME/tmux/omac-theme.conf")"
 contains "tmux live-reloaded" "source-file $XDG_CONFIG_HOME/tmux/omac-theme.conf" "$(<"$TMUX_LOG")"
-contains "ghostty live-reloaded via SIGUSR2" "-USR2 -x ghostty" "$(<"$PKILL_LOG")"
-contains "btop live-reloaded via SIGUSR2" "-USR2 -x btop" "$(<"$PKILL_LOG")"
-contains "nvim live-reloaded via SIGUSR1" "-USR1 -x nvim" "$(<"$PKILL_LOG")"
+# signal_app resolves PIDs from the ps stub's fake table (see theme_stubs.zsh):
+# ghostty runs as a macOS app bundle whose proc name pkill can't match, so the
+# reload must go through ps+kill, not pkill.
+contains "ghostty live-reloaded via SIGUSR2" "-USR2 101" "$(<"$KILL_LOG")"
+contains "btop live-reloaded via SIGUSR2" "-USR2 202" "$(<"$KILL_LOG")"
+contains "nvim live-reloaded via SIGUSR1" "-USR1 303" "$(<"$KILL_LOG")"
+present="$(grep -c " 404" "$KILL_LOG" || true)"
+check "unrelated processes not signalled" "0" "$present"
 contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$OMAC_APPSUPPORT/Code/User/settings.json")"
 contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "01-wall.jpg" "$(<"$WALLPAPER_LOG")"
