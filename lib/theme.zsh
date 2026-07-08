@@ -316,12 +316,21 @@ omac::theme::set() {             # <name>
   command -v sketchybar >/dev/null 2>&1 && sketchybar --reload >/dev/null 2>&1
   # tmux: re-source the rendered colors into any running server (no-op if none).
   command -v tmux >/dev/null 2>&1 && tmux source-file "$cfg/tmux/omac-theme.conf" >/dev/null 2>&1
+  # Ghostty: SIGUSR2 makes it re-read its config live (Ghostty >= 1.2; same
+  # mechanism Omarchy's theme-set uses). Non-zero when not running — ignore.
+  pkill -USR2 -x ghostty >/dev/null 2>&1 || true
+  # btop: SIGUSR2 = reload config (btop >= 1.3.1), picking up the repointed
+  # color_theme — exactly what omarchy-restart-btop does.
+  pkill -USR2 -x btop >/dev/null 2>&1 || true
+  # Neovim: SIGUSR1 fires the Signal autocmd registered by omac-themes.lua,
+  # which re-reads the repointed theme symlink and re-applies the colorscheme.
+  pkill -USR1 -x nvim >/dev/null 2>&1 || true
 
   # 7. Persist.
   omac::theme::persist "$name"
 
   omac::ok "theme set: $name"
-  omac::info "Ghostty, Neovim, and btop apply on the next new window/instance"
+  omac::info "running apps reload live; first nvim launch installs any new colorschemes"
 }
 
 # Re-apply the current theme (re-render + reload) without changing the selection.
@@ -391,6 +400,8 @@ omac::theme::bootstrap_lazyvim() {   # <cfg>
 
 # Scaffold LazyVim (once) and drop omac's plugin symlinks into it:
 #   omac-theme.lua  -> the current theme's colorscheme spec (repoints per `set`)
+#   omac-themes.lua -> ALL themes' colorscheme plugins (lazy) + the SIGUSR1
+#                      hot-reload autocmd, so running instances switch live
 #   omac-lang.lua   -> language stacks (LSP/treesitter/format/lint per language)
 #   omac-dx.lua     -> cross-cutting DX (prettier, eslint, bash LSP)
 # lang/dx are omac-owned and theme-independent, so they point at the omac install
@@ -403,9 +414,10 @@ omac::theme::wire_nvim() {   # <cfg>
   local cfg="$1"
   omac::theme::bootstrap_lazyvim "$cfg"
   mkdir -p "$cfg/nvim/lua/plugins"
-  ln -sfn "$OMAC_CURRENT/neovim.lua" "$cfg/nvim/lua/plugins/omac-theme.lua"
-  ln -sfn "$OMAC_NVIM/omac-lang.lua" "$cfg/nvim/lua/plugins/omac-lang.lua"
-  ln -sfn "$OMAC_NVIM/omac-dx.lua"   "$cfg/nvim/lua/plugins/omac-dx.lua"
+  ln -sfn "$OMAC_CURRENT/neovim.lua"   "$cfg/nvim/lua/plugins/omac-theme.lua"
+  ln -sfn "$OMAC_NVIM/omac-themes.lua" "$cfg/nvim/lua/plugins/omac-themes.lua"
+  ln -sfn "$OMAC_NVIM/omac-lang.lua"   "$cfg/nvim/lua/plugins/omac-lang.lua"
+  ln -sfn "$OMAC_NVIM/omac-dx.lua"     "$cfg/nvim/lua/plugins/omac-dx.lua"
 }
 
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).

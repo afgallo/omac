@@ -42,6 +42,9 @@ contains "ghostty theme name" "theme = tokyonight" "$(<"$XDG_CONFIG_HOME/ghostty
 contains "sketchybar rendered" "BAR_COLOR=0xff1a1b26" "$(<"$XDG_CONFIG_HOME/sketchybar/colors.sh")"
 contains "tmux colors rendered" 'status-style "bg=#1a1b26,fg=#a9b1d6"' "$(<"$XDG_CONFIG_HOME/tmux/omac-theme.conf")"
 contains "tmux live-reloaded" "source-file $XDG_CONFIG_HOME/tmux/omac-theme.conf" "$(<"$TMUX_LOG")"
+contains "ghostty live-reloaded via SIGUSR2" "-USR2 -x ghostty" "$(<"$PKILL_LOG")"
+contains "btop live-reloaded via SIGUSR2" "-USR2 -x btop" "$(<"$PKILL_LOG")"
+contains "nvim live-reloaded via SIGUSR1" "-USR1 -x nvim" "$(<"$PKILL_LOG")"
 contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$OMAC_APPSUPPORT/Code/User/settings.json")"
 contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "01-wall.jpg" "$(<"$WALLPAPER_LOG")"
@@ -51,6 +54,8 @@ contains "selection persisted" 'OMAC_ACTIVE_THEME="tokyo-night"' "$(<"$OMAC_CONF
 # when the machine was never `install`-ed (regression: set-before-install).
 check "nvim theme plugin linked on set" "1" \
   "$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-theme.lua" ]] && print 1 || print 0)"
+check "nvim themes pack linked on set" "1" \
+  "$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-themes.lua" ]] && print 1 || print 0)"
 
 # Switching again updates the persisted value (no duplicate).
 mkdir -p "$OMAC_THEMES/nord/backgrounds"; cp "$OMAC_THEMES/tokyo-night/colors.toml" "$OMAC_THEMES/nord/colors.toml"

@@ -2,15 +2,15 @@
 # Call _theme_stub_setup AFTER exporting OMAC_*/XDG_CONFIG_HOME. Exposes one
 # <NAME>_LOG per binary (uppercased): OSASCRIPT_LOG, CODE_LOG, CURSOR_LOG,
 # SKETCHYBAR_LOG, DEFAULTS_LOG, OPEN_LOG, BAT_LOG, GIT_LOG, WALLPAPER_LOG,
-# TMUX_LOG.
+# TMUX_LOG, PKILL_LOG.
 _theme_stub_setup() {
   local dir; dir="$(mktemp -d)"
   export OSASCRIPT_LOG="$(mktemp)" CODE_LOG="$(mktemp)" CURSOR_LOG="$(mktemp)" \
          SKETCHYBAR_LOG="$(mktemp)" DEFAULTS_LOG="$(mktemp)" OPEN_LOG="$(mktemp)" \
          BAT_LOG="$(mktemp)" GIT_LOG="$(mktemp)" WALLPAPER_LOG="$(mktemp)" \
-         TMUX_LOG="$(mktemp)"
+         TMUX_LOG="$(mktemp)" PKILL_LOG="$(mktemp)"
   local name var
-  for name in osascript code cursor sketchybar defaults open bat git wallpaper tmux; do
+  for name in osascript code cursor sketchybar defaults open bat git wallpaper tmux pkill; do
     var="${(U)name}_LOG"
     cat > "$dir/$name" <<SH
 #!/usr/bin/env zsh
