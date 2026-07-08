@@ -10,6 +10,7 @@ export XDG_CONFIG_HOME="$(mktemp -d)"
 export HOME="$(mktemp -d)"
 export OMAC_CONFIG="$(mktemp -d)"
 export OMAC_CURRENT="$OMAC_CONFIG/current"
+export OMAC_NVIM="$ROOT/nvim"   # omac-owned lang/dx specs live in the repo
 mkdir -p "$OMAC_CURRENT"
 print -r -- 'return {}' > "$OMAC_CURRENT/neovim.lua"
 
@@ -39,6 +40,14 @@ check "starter init.lua created" "1" "$([[ -f "$XDG_CONFIG_HOME/nvim/init.lua" ]
 check ".git removed after clone" "1" "$([[ ! -e "$XDG_CONFIG_HOME/nvim/.git" ]] && print 1 || print 0)"
 check "theme plugin linked into starter" "1" \
   "$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-theme.lua" ]] && print 1 || print 0)"
+check "lang plugin linked into starter" "1" \
+  "$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-lang.lua" ]] && print 1 || print 0)"
+check "dx plugin linked into starter" "1" \
+  "$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-dx.lua" ]] && print 1 || print 0)"
+check "lang plugin points at omac install" "$ROOT/nvim/omac-lang.lua" \
+  "$(readlink "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-lang.lua")"
+check "dx plugin points at omac install" "$ROOT/nvim/omac-dx.lua" \
+  "$(readlink "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-dx.lua")"
 
 # 2. Idempotent: an existing nvim config is left untouched (no second clone).
 : > "$GIT_LOG"

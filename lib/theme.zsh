@@ -134,6 +134,29 @@ omac::theme::render_sketchybar() {   # <name> <dest-file>
   } > "$dest"
 }
 
+# tmux status colors from the palette. tmux takes `#rrggbb` verbatim (no 0xAA
+# conversion, unlike SketchyBar). Replaces the hardcoded theme plugin an Omarchy
+# setup would use, so the status line follows `omac theme set`. Sourced by
+# shell/tmux.conf as ~/.config/tmux/omac-theme.conf.
+omac::theme::render_tmux() {     # <name> <dest-file>
+  local dir="$OMAC_THEMES/$1" dest="$2" bg fg ac lo
+  bg="$(omac::theme::toml_get "$dir/colors.toml" background)"
+  fg="$(omac::theme::toml_get "$dir/colors.toml" foreground)"
+  ac="$(omac::theme::toml_get "$dir/colors.toml" accent)"
+  lo="$(omac::theme::toml_get "$dir/colors.toml" color8)" || lo="$fg"  # dim/inactive
+  mkdir -p "${dest:h}"
+  {
+    print -r -- "# omac — rendered by 'omac theme set'. Do not edit."
+    print -r -- "set -g status-style \"bg=$bg,fg=$fg\""
+    print -r -- "set -g window-status-current-style \"bg=$ac,fg=$bg,bold\""
+    print -r -- "set -g window-status-style \"fg=$fg\""
+    print -r -- "set -g pane-border-style \"fg=$lo\""
+    print -r -- "set -g pane-active-border-style \"fg=$ac\""
+    print -r -- "set -g mode-style \"bg=$ac,fg=$bg\""
+    print -r -- "set -g message-style \"bg=$ac,fg=$bg\""
+  } > "$dest"
+}
+
 # Absolute path of the theme's default background. Backgrounds follow the
 # `NN-name.ext` convention (zero-padded from 01); `01-` is the default, so the
 # first omarchy-free file wins. See docs/themes for the naming contract.
@@ -265,6 +288,7 @@ omac::theme::set() {             # <name>
   # 2. Render class-A/C targets into their app locations.
   omac::theme::render_ghostty "$name" "$cfg/ghostty/omac-theme.conf"
   omac::theme::render_sketchybar "$name" "$cfg/sketchybar/colors.sh"
+  omac::theme::render_tmux "$name" "$cfg/tmux/omac-theme.conf"
 
   # 3. Editors (best-effort): VS Code colorTheme from the theme's vscode.json.
   #    vscode.json is JSON ("name": "..."), so read it JSON-aware, not via toml_get.
@@ -290,6 +314,8 @@ omac::theme::set() {             # <name>
 
   # 6. Reload what can reload live.
   command -v sketchybar >/dev/null 2>&1 && sketchybar --reload >/dev/null 2>&1
+  # tmux: re-source the rendered colors into any running server (no-op if none).
+  command -v tmux >/dev/null 2>&1 && tmux source-file "$cfg/tmux/omac-theme.conf" >/dev/null 2>&1
 
   # 7. Persist.
   omac::theme::persist "$name"
@@ -363,7 +389,13 @@ omac::theme::bootstrap_lazyvim() {   # <cfg>
   fi
 }
 
-# Scaffold LazyVim (once) and point its themed plugin at the current theme.
+# Scaffold LazyVim (once) and drop omac's plugin symlinks into it:
+#   omac-theme.lua  -> the current theme's colorscheme spec (repoints per `set`)
+#   omac-lang.lua   -> language stacks (LSP/treesitter/format/lint per language)
+#   omac-dx.lua     -> cross-cutting DX (prettier, eslint, bash LSP)
+# lang/dx are omac-owned and theme-independent, so they point at the omac install
+# rather than the per-theme `current` link. Together they make the scaffolded
+# LazyVim deliver a real out-of-the-box editing experience, not a bare starter.
 # Idempotent: bootstrap_lazyvim no-ops once <cfg>/nvim exists; ln -sfn is safe
 # to re-run. Callable from both first-run wiring and every `set` so a machine
 # themed via `set` before `install` still gets a real LazyVim base.
@@ -372,6 +404,8 @@ omac::theme::wire_nvim() {   # <cfg>
   omac::theme::bootstrap_lazyvim "$cfg"
   mkdir -p "$cfg/nvim/lua/plugins"
   ln -sfn "$OMAC_CURRENT/neovim.lua" "$cfg/nvim/lua/plugins/omac-theme.lua"
+  ln -sfn "$OMAC_NVIM/omac-lang.lua" "$cfg/nvim/lua/plugins/omac-lang.lua"
+  ln -sfn "$OMAC_NVIM/omac-dx.lua"   "$cfg/nvim/lua/plugins/omac-dx.lua"
 }
 
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).

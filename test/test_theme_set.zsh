@@ -22,6 +22,7 @@ print -r -- 'theme[main_bg]="#1a1b26"' > "$OMAC_THEMES/tokyo-night/btop.theme"
 export XDG_CONFIG_HOME="$(mktemp -d)"
 export OMAC_CONFIG="$(mktemp -d)"
 export OMAC_CURRENT="$OMAC_CONFIG/current"
+export OMAC_NVIM="$ROOT/nvim"        # omac-owned lang/dx specs (wire_nvim links these)
 export HOME="$(mktemp -d)"
 export OMAC_APPSUPPORT="$(mktemp -d)"
 _theme_stub_setup
@@ -39,6 +40,8 @@ present="$([[ -f "$XDG_CONFIG_HOME/ghostty/omac-theme.conf" ]] && print yes || p
 check "ghostty fragment written" "yes" "$present"
 contains "ghostty theme name" "theme = tokyonight" "$(<"$XDG_CONFIG_HOME/ghostty/omac-theme.conf")"
 contains "sketchybar rendered" "BAR_COLOR=0xff1a1b26" "$(<"$XDG_CONFIG_HOME/sketchybar/colors.sh")"
+contains "tmux colors rendered" 'status-style "bg=#1a1b26,fg=#a9b1d6"' "$(<"$XDG_CONFIG_HOME/tmux/omac-theme.conf")"
+contains "tmux live-reloaded" "source-file $XDG_CONFIG_HOME/tmux/omac-theme.conf" "$(<"$TMUX_LOG")"
 contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$OMAC_APPSUPPORT/Code/User/settings.json")"
 contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "01-wall.jpg" "$(<"$WALLPAPER_LOG")"

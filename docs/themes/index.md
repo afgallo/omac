@@ -34,10 +34,11 @@ Each `themes/<name>/` directory holds two things:
 - **Ported per-app files** — ready-made configs for apps that Omarchy already themed (Ghostty,
   Neovim (as [LazyVim](https://www.lazyvim.org)), btop, bat, delta, lazygit, wallpaper,
   and more). These drop in almost unchanged.
-- **A `colors.toml` palette** — for the targets Omarchy never had (macOS light/dark appearance,
-  SketchyBar, the [Starship](../commands/shell.md#starship-theming) prompt, Raycast, AeroSpace
-  accent/border colors), omac *derives* the config from this palette through a templating seam.
-  Nothing to hand-port.
+- **A `colors.toml` palette** — for the targets Omarchy never had a per-app file for (macOS
+  light/dark appearance, SketchyBar, the [Starship](../commands/shell.md#starship-theming) prompt,
+  Raycast, AeroSpace accent/border colors, and the tmux status line), omac *derives* the config
+  from this palette through a templating seam. Nothing to hand-port. tmux status colors are
+  re-sourced into any running server, so a theme switch recolors tmux live.
 
 This hybrid — file-per-app where a port exists, palette-derived where it does not — is the heart
 of omac. See [Architecture](../architecture/index.md#the-theme-seam) for the mechanics.

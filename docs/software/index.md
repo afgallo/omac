@@ -18,15 +18,24 @@ Each group is a Brewfile under `software/groups/`.
 | `ai` | `claude-code`, `opencode`, LM Studio |
 | `shell` | `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `fd`, `git-delta`, `starship`, `jq`, `tree`, `fastfetch`, `awscli` |
 | `ides` | Visual Studio Code, Cursor, Zed, Neovim + [LazyVim](https://www.lazyvim.org) |
-| `tuis` | `lazygit`, `lazydocker`, `btop`, `pgcli` |
+| `tuis` | `tmux`, `lazygit`, `lazydocker`, `btop`, `pgcli` |
 | `guis` | Obsidian, Typora, LocalSend, mpv, Flameshot, **Ghostty** (default terminal), **Raycast** |
 | `fonts` | JetBrainsMono, FiraCode, Hack, CaskaydiaCove — all Nerd Fonts |
 
 The `ides` group installs the Neovim binary; the [LazyVim](https://www.lazyvim.org) base
 config is scaffolded by the [theme engine](../themes/index.md) the first time a theme is
-applied, so the Neovim colorscheme each theme ships actually loads. This is
-non-destructive — if you already have an nvim config, omac leaves it untouched and just
-drops its theme plugin into your existing LazyVim-style layout (`lua/plugins/`).
+applied. Alongside the colorscheme each theme ships, omac drops two owned plugin specs
+so the scaffolded editor works out of the box rather than as a bare starter:
+
+- `omac-lang.lua` — language stacks (LSP + treesitter + formatter + linter) for the
+  runtimes omac installs (Go, Ruby, Python, TS/JS) plus JSON, YAML, Docker and Markdown,
+  via LazyVim's `extras.lang.*`.
+- `omac-dx.lua` — cross-cutting tooling: Prettier, ESLint, and a Bash language server.
+
+All three (`omac-theme.lua`, `omac-lang.lua`, `omac-dx.lua`) are symlinks omac owns and
+refreshes on upgrade. This is non-destructive — if you already have an nvim config, omac
+leaves it untouched and just drops these clearly-named files into your `lua/plugins/`
+(LazyVim merges specs, so your own config still wins where it overlaps).
 
 ## Runtimes
 

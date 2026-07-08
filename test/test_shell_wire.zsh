@@ -10,6 +10,23 @@ source "$ROOT/lib/common.zsh"
 export XDG_CONFIG_HOME="$(mktemp -d)"
 export HOME="$(mktemp -d)"
 
+# Offline stubs: TPM bootstrap must never hit the network. `git clone` fakes a
+# TPM checkout (with an install_plugins script); `tmux` is inert. GIT_LOG proves
+# idempotency (clone happens once).
+STUB="$(mktemp -d)"; export GIT_LOG="$(mktemp)"
+cat > "$STUB/git" <<'SH'
+#!/usr/bin/env zsh
+print -r -- "$*" >> "$GIT_LOG"
+if [[ "$1" == clone ]]; then
+  dest="${@[-1]}"; mkdir -p "$dest/bin"
+  printf '#!/bin/sh\nexit 0\n' > "$dest/bin/install_plugins"; chmod +x "$dest/bin/install_plugins"
+fi
+exit 0
+SH
+printf '#!/usr/bin/env zsh\nexit 0\n' > "$STUB/tmux"
+chmod +x "$STUB/git" "$STUB/tmux"
+export PATH="$STUB:$PATH"
+
 # Fixture shell fragment tree + a starship.toml with a managed palette block,
 # isolated from the repo's real shell/.
 export OMAC_SHELL="$(mktemp -d)/shell"
@@ -76,9 +93,24 @@ check "install wired zshrc"  "1" "$(grep -c '>>> omac >>>' "$HOME/.zshrc")"
 check "install wired bashrc" "1" "$(grep -c '>>> omac >>>' "$HOME/.bashrc")"
 contains "install painted palette from active theme" 'accent = "#89b4fa"' "$(<"$XDG_CONFIG_HOME/starship.toml")"
 
+# --- tmux: install wires the conf, bootstraps TPM, and renders theme colors --
+tconf="$XDG_CONFIG_HOME/tmux/tmux.conf"
+check "tmux.conf block written" "1" "$(grep -c '>>> omac >>>' "$tconf")"
+contains "tmux.conf sources omac base" "source-file $OMAC_SHELL/tmux.conf" "$(<"$tconf")"
+check "TPM cloned" "1" "$(test -d "$XDG_CONFIG_HOME/tmux/plugins/tpm" && print 1 || print 0)"
+check "TPM cloned once" "1" "$(grep -c '^clone' "$GIT_LOG")"
+contains "tmux theme rendered from active palette" 'status-style "bg=#1e1e2e,fg=#cdd6f4"' \
+  "$(<"$XDG_CONFIG_HOME/tmux/omac-theme.conf")"
+
+# Idempotent: a second deploy neither duplicates the block nor re-clones TPM.
+omac::shell::deploy_tmux >/dev/null
+check "tmux.conf block not duplicated" "1" "$(grep -c '>>> omac >>>' "$tconf")"
+check "TPM not re-cloned" "1" "$(grep -c '^clone' "$GIT_LOG")"
+
 # --- status -----------------------------------------------------------------
 st="$(omac::shell::status)"
 contains "status reports zshrc wired"   ".zshrc       yes" "$st"
 contains "status reports starship seeded" "starship.toml yes" "$st"
+contains "status reports tmux wired" "tmux.conf    yes" "$st"
 
 finish

@@ -50,6 +50,16 @@ contains "sketchybar bar color"   "BAR_COLOR=0xff1a1b26"   "$sbout"
 contains "sketchybar label color" "LABEL_COLOR=0xffa9b1d6" "$sbout"
 contains "sketchybar accent"      "ACCENT_COLOR=0xff7aa2f7" "$sbout"
 
+# --- tmux status colors ------------------------------------------------------
+# 'named' has no color8, so pane-border falls back to foreground.
+tm="$(mktemp)"
+omac::theme::render_tmux named "$tm"
+tmout="$(<"$tm")"
+contains "tmux status uses bg+fg"        'set -g status-style "bg=#1a1b26,fg=#a9b1d6"' "$tmout"
+contains "tmux active window uses accent" 'window-status-current-style "bg=#7aa2f7,fg=#1a1b26,bold"' "$tmout"
+contains "tmux active border is accent"   'pane-active-border-style "fg=#7aa2f7"' "$tmout"
+contains "tmux takes raw hex (no 0xAA)"    'mode-style "bg=#7aa2f7,fg=#1a1b26"' "$tmout"
+
 bg="$(omac::theme::first_background named)"
 check "first background skips omarchy" "1-first.jpg" "${bg:t}"
 bg="$(omac::theme::first_background palette)"

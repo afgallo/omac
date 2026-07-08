@@ -7,6 +7,7 @@
 : ${OMAC_CURRENT:="$OMAC_CONFIG/current"}
 : ${OMAC_THEMES:="$OMAC_HOME/themes"}
 : ${OMAC_TEMPLATES:="$OMAC_HOME/templates"}
+: ${OMAC_NVIM:="$OMAC_HOME/nvim"}   # omac-owned LazyVim plugin specs (lang + DX)
 : ${OMAC_DEFAULT_THEME:="catppuccin"}
 : ${OMAC_ACTIVE_THEME:=""}
 : ${OMAC_APPSUPPORT:="$HOME/Library/Application Support"}  # VS Code/Cursor settings root (NOT XDG on macOS)
