@@ -2,18 +2,11 @@
 -- Symlinked to ~/.config/nvim/lua/plugins/omac-dx.lua by `omac theme` wiring.
 --
 -- omac owns this file (symlink back into the omac install; edits are overwritten
--- on upgrade). Companion to omac-lang.lua: that file adds per-language stacks,
--- this one adds the tooling that spans languages so it actually *runs* rather
--- than just being installed.
+-- on upgrade). Companion to omac-extras.lua: that file enables LazyVim extras
+-- (per-language stacks, prettier, eslint — imported before user plugins, as
+-- LazyVim requires), this one holds plain plugin specs that are fine to merge
+-- from lua/plugins/ like any user spec.
 return {
-  -- Prettier across web/markup filetypes (js, ts, json, yaml, css, html, md).
-  -- Attaches only where prettier makes sense; format-on-save then works OOTB.
-  { import = "lazyvim.plugins.extras.formatting.prettier" },
-
-  -- ESLint for JS/TS. Safe by design: only attaches when a project ships an
-  -- eslint config, so non-JS projects are unaffected.
-  { import = "lazyvim.plugins.extras.linting.eslint" },
-
   -- vim-tmux-navigator: the nvim half of seamless Ctrl-hjkl movement between
   -- nvim splits and tmux panes. The tmux half lives in omac's shell/tmux.conf
   -- (installed via TPM). Loaded eagerly so the <C-h/j/k/l> maps exist up front.

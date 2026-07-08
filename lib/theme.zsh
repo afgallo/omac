@@ -411,26 +411,64 @@ omac::theme::bootstrap_lazyvim() {   # <cfg>
   fi
 }
 
+# LazyVim requires extras to be imported after `lazyvim.plugins` but before the
+# user's own `plugins` (specs merge in import order — extras imported last would
+# override user config, and LazyVim warns on startup). So omac's extras module
+# can't sit in lua/plugins/; it must be imported from lua/config/lazy.lua's spec.
+# Insert `{ import = "omac.extras" }` once, anchored on the starter's
+# `{ import = "plugins" }` line. Idempotent: the first grep makes re-runs no-ops.
+# A user who restructured lazy.lua beyond recognition just gets a warn telling
+# them to add the import themselves; their file is never touched blindly.
+omac::theme::wire_lazy_extras() {   # <cfg>
+  local lazy="$1/nvim/lua/config/lazy.lua"
+  [[ -f "$lazy" ]] || return 0
+  grep -qF 'omac.extras' "$lazy" && return 0
+  local anchor='{ import = "plugins" }'
+  if ! grep -qF "$anchor" "$lazy"; then
+    omac::warn "no ${anchor} spec line in $lazy — add { import = \"omac.extras\" } before your plugins import"
+    return 0
+  fi
+  local tmp="$lazy.omac-new"
+  awk -v anchor="$anchor" '
+    !done && index($0, anchor) {
+      match($0, /^[ \t]*/); indent = substr($0, 1, RLENGTH)
+      print indent "-- omac-managed LazyVim extras (must import before your own plugins)"
+      print indent "{ import = \"omac.extras\" },"
+      done = 1
+    }
+    { print }
+  ' "$lazy" > "$tmp"
+  omac::backup_path "$lazy"
+  mv "$tmp" "$lazy"
+  omac::ok "wired omac.extras import into nvim/lua/config/lazy.lua"
+}
+
 # Scaffold LazyVim (once) and drop omac's plugin symlinks into it:
 #   omac-theme.lua  -> the current theme's colorscheme spec (repoints per `set`)
 #   omac-themes.lua -> ALL themes' colorscheme plugins (lazy) + the SIGUSR1
 #                      hot-reload autocmd, so running instances switch live
-#   omac-lang.lua   -> language stacks (LSP/treesitter/format/lint per language)
-#   omac-dx.lua     -> cross-cutting DX (prettier, eslint, bash LSP)
-# lang/dx are omac-owned and theme-independent, so they point at the omac install
-# rather than the per-theme `current` link. Together they make the scaffolded
-# LazyVim deliver a real out-of-the-box editing experience, not a bare starter.
-# Idempotent: bootstrap_lazyvim no-ops once <cfg>/nvim exists; ln -sfn is safe
-# to re-run. Callable from both first-run wiring and every `set` so a machine
-# themed via `set` before `install` still gets a real LazyVim base.
+#   omac-dx.lua     -> cross-cutting DX (tmux navigation, bash LSP, shfmt)
+#   omac/extras.lua -> LazyVim extras (language stacks, prettier, eslint),
+#                      imported from config/lazy.lua via wire_lazy_extras
+# dx/extras are omac-owned and theme-independent, so they point at the omac
+# install rather than the per-theme `current` link. Together they make the
+# scaffolded LazyVim deliver a real out-of-the-box editing experience, not a
+# bare starter. Idempotent: bootstrap_lazyvim no-ops once <cfg>/nvim exists;
+# ln -sfn is safe to re-run. Callable from both first-run wiring and every
+# `set` so a machine themed via `set` before `install` still gets a real
+# LazyVim base.
 omac::theme::wire_nvim() {   # <cfg>
   local cfg="$1"
   omac::theme::bootstrap_lazyvim "$cfg"
-  mkdir -p "$cfg/nvim/lua/plugins"
+  mkdir -p "$cfg/nvim/lua/plugins" "$cfg/nvim/lua/omac"
   ln -sfn "$OMAC_CURRENT/neovim.lua"   "$cfg/nvim/lua/plugins/omac-theme.lua"
   ln -sfn "$OMAC_NVIM/omac-themes.lua" "$cfg/nvim/lua/plugins/omac-themes.lua"
-  ln -sfn "$OMAC_NVIM/omac-lang.lua"   "$cfg/nvim/lua/plugins/omac-lang.lua"
   ln -sfn "$OMAC_NVIM/omac-dx.lua"     "$cfg/nvim/lua/plugins/omac-dx.lua"
+  ln -sfn "$OMAC_NVIM/omac-extras.lua" "$cfg/nvim/lua/omac/extras.lua"
+  # Pre-extras layouts linked omac-lang.lua into lua/plugins/ — remove it so
+  # its extras imports stop tripping LazyVim's import-order check.
+  [[ -L "$cfg/nvim/lua/plugins/omac-lang.lua" ]] && rm -f "$cfg/nvim/lua/plugins/omac-lang.lua"
+  omac::theme::wire_lazy_extras "$cfg"
 }
 
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).

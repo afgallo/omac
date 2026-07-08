@@ -27,15 +27,17 @@ config is scaffolded by the [theme engine](../themes/index.md) the first time a 
 applied. Alongside the colorscheme each theme ships, omac drops two owned plugin specs
 so the scaffolded editor works out of the box rather than as a bare starter:
 
-- `omac-lang.lua` — language stacks (LSP + treesitter + formatter + linter) for the
-  runtimes omac installs (Go, Ruby, Python, TS/JS) plus JSON, YAML, Docker and Markdown,
-  via LazyVim's `extras.lang.*`.
-- `omac-dx.lua` — cross-cutting tooling: Prettier, ESLint, and a Bash language server.
+- `omac/extras.lua` — LazyVim extras: language stacks (LSP + treesitter + formatter +
+  linter) for the runtimes omac installs (Go, Ruby, Python, TS/JS) plus JSON, YAML,
+  Docker and Markdown, and Prettier/ESLint. Imported from `lua/config/lazy.lua`
+  between `lazyvim.plugins` and your own plugins — the order LazyVim requires.
+- `omac-dx.lua` — cross-cutting tooling: tmux-aware pane navigation and a Bash
+  language server.
 
-All three (`omac-theme.lua`, `omac-lang.lua`, `omac-dx.lua`) are symlinks omac owns and
+All three (`omac-theme.lua`, `omac-dx.lua`, `omac/extras.lua`) are symlinks omac owns and
 refreshes on upgrade. This is non-destructive — if you already have an nvim config, omac
-leaves it untouched and just drops these clearly-named files into your `lua/plugins/`
-(LazyVim merges specs, so your own config still wins where it overlaps).
+leaves it untouched and just drops these clearly-named files in (LazyVim merges specs,
+so your own config still wins where it overlaps).
 
 ## Runtimes
 
