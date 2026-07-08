@@ -18,7 +18,7 @@ Each group is a Brewfile under `software/groups/`.
 | `ai` | `claude-code`, `opencode`, LM Studio |
 | `shell` | `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `fd`, `git-delta`, `starship`, `jq`, `tree`, `fastfetch`, `awscli` |
 | `ides` | Visual Studio Code, Cursor, Zed, Neovim + [LazyVim](https://www.lazyvim.org) |
-| `tuis` | `tmux`, `lazygit`, `lazydocker`, `btop`, `pgcli` |
+| `tuis` | `tmux`, `lazygit`, `lazydocker`, `htop`, `pgcli` |
 | `guis` | Obsidian, Typora, LocalSend, mpv, Flameshot, **Ghostty** (default terminal), **Raycast** |
 | `fonts` | JetBrainsMono, FiraCode, Hack, CaskaydiaCove — all Nerd Fonts |
 

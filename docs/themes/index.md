@@ -32,7 +32,7 @@ omac theme reload          # re-apply after editing a config
 Each `themes/<name>/` directory holds two things:
 
 - **Ported per-app files** — ready-made configs for apps that Omarchy already themed (Ghostty,
-  Neovim (as [LazyVim](https://www.lazyvim.org)), btop, bat, delta, lazygit, wallpaper,
+  Neovim (as [LazyVim](https://www.lazyvim.org)), bat, delta, lazygit, wallpaper,
   and more). These drop in almost unchanged.
 - **A `colors.toml` palette** — for the targets Omarchy never had a per-app file for (macOS
   light/dark appearance, SketchyBar, the [Starship](../commands/shell.md#starship-theming) prompt,

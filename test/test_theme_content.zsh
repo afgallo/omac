@@ -12,7 +12,6 @@ for t in $want; do
   contains "theme present: $t" "$t" "$got"
   check "$t has colors.toml" "yes" "$([[ -f "$ROOT/themes/$t/colors.toml" ]] && print yes || print no)"
   check "$t has neovim.lua"  "yes" "$([[ -f "$ROOT/themes/$t/neovim.lua" ]] && print yes || print no)"
-  check "$t has btop.theme"  "yes" "$([[ -f "$ROOT/themes/$t/btop.theme" ]] && print yes || print no)"
   check "$t has vscode.json" "yes" "$([[ -f "$ROOT/themes/$t/vscode.json" ]] && print yes || print no)"
   check "$t palette parses"  "no"  "$([[ -z "$(omac::theme::toml_get "$ROOT/themes/$t/colors.toml" background)" ]] && print yes || print no)"
   check "$t has a background" "0"  "$(omac::theme::first_background "$t" >/dev/null; print $?)"

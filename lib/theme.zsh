@@ -335,9 +335,6 @@ omac::theme::set() {             # <name>
   # mechanism Omarchy's theme-set uses). Must go through signal_app — pkill
   # can't see the macOS app-bundle process (see signal_app).
   omac::theme::signal_app USR2 ghostty
-  # btop: SIGUSR2 = reload config (btop >= 1.3.1), picking up the repointed
-  # color_theme — exactly what omarchy-restart-btop does.
-  omac::theme::signal_app USR2 btop
   # Neovim: SIGUSR1 fires the Signal autocmd registered by omac-themes.lua,
   # which re-reads the repointed theme symlink and re-applies the colorscheme.
   omac::theme::signal_app USR1 nvim
@@ -441,8 +438,7 @@ omac::theme::wire() {
   local cfg; cfg="$(omac::theme::config_dir)"
   omac::ensure_block "$cfg/ghostty/config" "config-file = $cfg/ghostty/omac-theme.conf"
   omac::theme::wire_nvim "$cfg"
-  omac::ensure_block "$cfg/btop/btop.conf" "color_theme = \"$OMAC_CURRENT/btop.theme\""
-  omac::ok "wired ghostty, neovim, btop"
+  omac::ok "wired ghostty, neovim"
 }
 
 # Full first-run: extensions, wiring, then apply the default theme.

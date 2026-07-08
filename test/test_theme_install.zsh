@@ -15,7 +15,6 @@ foreground = "#a9b1d6"
 background = "#1a1b26"
 EOF
   print -r -- 'return {}' > "$OMAC_THEMES/$t/neovim.lua"
-  print -r -- 'theme[main_bg]="#000000"' > "$OMAC_THEMES/$t/btop.theme"
   : > "$OMAC_THEMES/$t/backgrounds/1-w.jpg"
 done
 print -r -- '{ "name": "Tokyo Night", "extension": "enkia.tokyo-night"}' > "$OMAC_THEMES/tokyo-night/vscode.json"
@@ -39,7 +38,6 @@ omac::theme::wire >/dev/null 2>&1
 contains "ghostty include wired" "config-file" "$(<"$XDG_CONFIG_HOME/ghostty/config")"
 present="$([[ -L "$XDG_CONFIG_HOME/nvim/lua/plugins/omac-theme.lua" ]] && print yes || print no)"
 check "neovim plugin pointer linked" "yes" "$present"
-contains "btop color_theme set" "color_theme" "$(<"$XDG_CONFIG_HOME/btop/btop.conf")"
 
 omac::theme::install >/dev/null 2>&1
 check "install exits 0" "0" "$?"

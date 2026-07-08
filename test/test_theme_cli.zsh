@@ -22,7 +22,6 @@ foreground = "#a9b1d6"
 background = "#1a1b26"
 EOF
   print -r -- 'return {}' > "$OMAC_THEMES/$t/neovim.lua"
-  print -r -- 'x' > "$OMAC_THEMES/$t/btop.theme"
   print -r -- "{ \"name\": \"$t\", \"extension\": \"e.$t\"}" > "$OMAC_THEMES/$t/vscode.json"
   : > "$OMAC_THEMES/$t/backgrounds/1-w.jpg"
 done

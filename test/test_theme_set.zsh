@@ -16,7 +16,6 @@ EOF
 print -r -- 'ghostty = "tokyonight"' > "$OMAC_THEMES/tokyo-night/apps.toml"
 print -r -- '{ "name": "Tokyo Night", "extension": "enkia.tokyo-night"}' > "$OMAC_THEMES/tokyo-night/vscode.json"
 print -r -- 'return {}' > "$OMAC_THEMES/tokyo-night/neovim.lua"
-print -r -- 'theme[main_bg]="#1a1b26"' > "$OMAC_THEMES/tokyo-night/btop.theme"
 : > "$OMAC_THEMES/tokyo-night/backgrounds/01-wall.jpg"
 
 export XDG_CONFIG_HOME="$(mktemp -d)"
@@ -46,7 +45,6 @@ contains "tmux live-reloaded" "source-file $XDG_CONFIG_HOME/tmux/omac-theme.conf
 # ghostty runs as a macOS app bundle whose proc name pkill can't match, so the
 # reload must go through ps+kill, not pkill.
 contains "ghostty live-reloaded via SIGUSR2" "-USR2 101" "$(<"$KILL_LOG")"
-contains "btop live-reloaded via SIGUSR2" "-USR2 202" "$(<"$KILL_LOG")"
 contains "nvim live-reloaded via SIGUSR1" "-USR1 303" "$(<"$KILL_LOG")"
 present="$(grep -c " 404" "$KILL_LOG" || true)"
 check "unrelated processes not signalled" "0" "$present"

@@ -20,12 +20,11 @@ SH
     chmod +x "$dir/$name"
   done
   # Fake process table for omac::theme::signal_app: ghostty as a macOS app
-  # bundle (the shape pkill can't match — the regression this guards), btop and
-  # nvim as plain CLI procs, plus noise that must NOT be signalled.
+  # bundle (the shape pkill can't match — the regression this guards), nvim as
+  # a plain CLI proc, plus noise that must NOT be signalled.
   cat > "$dir/ps" <<'SH'
 #!/usr/bin/env zsh
 print -r -- "  101 /Applications/Ghostty.app/Contents/MacOS/ghostty"
-print -r -- "  202 /opt/homebrew/bin/btop"
 print -r -- "  303 nvim"
 print -r -- "  404 /bin/zsh"
 SH

@@ -39,7 +39,7 @@ fi
 # --- TUIs -------------------------------------------------------------------
 command -v lazygit    >/dev/null 2>&1 && alias lg='lazygit'
 command -v lazydocker >/dev/null 2>&1 && alias lzd='lazydocker'
-command -v btop       >/dev/null 2>&1 && alias top='btop'
+command -v htop       >/dev/null 2>&1 && alias top='htop'
 
 # --- git shortcuts ----------------------------------------------------------
 alias g='git'
