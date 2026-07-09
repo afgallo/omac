@@ -48,3 +48,14 @@ almost unchanged), and **palette-derived** for the macOS-only targets Omarchy ne
 light/dark appearance, SketchyBar, Raycast, AeroSpace colors), rendered from a small `colors.toml`
 palette through a templating seam. `omac theme set` repoints the `current` symlink, re-renders the
 derived targets, and reloads each app.
+
+## The font seam
+
+Fonts are a sibling seam to colors, deliberately kept **orthogonal**: a theme switch never
+changes the typeface and `omac font set` never touches colors. Each renders its own file —
+Ghostty reads both `omac-theme.conf` (colors) and `omac-font.conf` (family + size) via
+`config-file` includes in one managed block. The engine (`lib/font.zsh`) resolves a bundled
+slug from `fonts/<name>/font.toml` or takes any family verbatim (passthrough), renders
+Ghostty and the VS Code/Cursor `settings.json`, live-reloads Ghostty (`SIGUSR2`), and
+persists the choice in `config.zsh` (`OMAC_ACTIVE_FONT`, `OMAC_ACTIVE_FONT_SIZE`) next to
+the active theme.

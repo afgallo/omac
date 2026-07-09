@@ -6,6 +6,7 @@ source "$ROOT/test/theme_stubs.zsh"
 
 fake="$(mktemp -d)"
 ln -s "$ROOT/lib" "$fake/lib"; ln -s "$ROOT/bin" "$fake/bin"; ln -s "$ROOT/cmd" "$fake/cmd"
+ln -s "$ROOT/fonts" "$fake/fonts"
 export OMAC_HOME="$fake"
 export OMAC_CONFIG="$(mktemp -d)"
 export OMAC_CURRENT="$OMAC_CONFIG/current"

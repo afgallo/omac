@@ -5,6 +5,20 @@ omac::log()   { print -r -- "  $*"; }
 omac::warn()  { print -r -- "! $*" >&2; }
 omac::error() { print -r -- "✗ $*" >&2; }
 
+# Read `key = "value"` from a flat TOML-ish file (colors.toml / apps.toml /
+# font.toml). Prints the unquoted value; empty + return 1 if the key is absent.
+omac::toml_get() {           # omac::toml_get <file> <key>
+  local file="$1" key="$2" line
+  [[ -f "$file" ]] || return 1
+  line="$(grep -E "^[[:space:]]*${key}[[:space:]]*=" "$file" 2>/dev/null | head -1)" || true
+  [[ -n "$line" ]] || return 1
+  line="${line#*=}"                       # drop `key =`
+  line="${line##[[:space:]]}"             # trim leading space
+  line="${line%%[[:space:]]}"             # trim trailing space
+  line="${line#\"}"; line="${line%\"}"    # strip surrounding quotes
+  print -r -- "$line"
+}
+
 omac::require_cmd() {        # omac::require_cmd <cmd>
   if ! command -v "$1" >/dev/null 2>&1; then
     omac::error "required command not found: $1"
@@ -101,4 +115,64 @@ omac::remove_block() {       # omac::remove_block <file>
                  { while (blanks>0) { print ""; blanks-- } print }
     END          { while (blanks>0) { print ""; blanks-- } }
   ' "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
+# Upsert one `export KEY="VALUE"` line inside the managed block of
+# $OMAC_CONFIG/config.zsh, preserving every other export the block already holds.
+# The theme and font modules both persist here, so a plain remove+ensure (which
+# would drop the sibling's line) is not enough — this reads the current exports,
+# replaces just <key>, and rewrites the block.
+omac::config_set() {         # omac::config_set <key> <value>
+  local key="$1" val="$2" file="$OMAC_CONFIG/config.zsh"
+  local begin="# >>> omac >>>" end="# <<< omac <<<"
+  local -a lines; local inblock=0 line
+  if [[ -f "$file" ]]; then
+    while IFS= read -r line; do
+      [[ "$line" == "$begin" ]] && { inblock=1; continue; }
+      [[ "$line" == "$end" ]]   && { inblock=0; continue; }
+      (( inblock )) || continue
+      [[ "$line" == "export $key="* ]] && continue   # drop the key we're setting
+      [[ -n "$line" ]] && lines+=("$line")           # keep the siblings
+    done < "$file"
+  fi
+  lines+=("export $key=\"$val\"")
+  omac::remove_block "$file"
+  omac::ensure_block "$file" "${(F)lines}"           # (F) = join array with newlines
+}
+
+# Upsert a top-level "<key>": <raw> pair in a flat JSON settings file (VS
+# Code/Cursor style). <raw> is written verbatim, so callers quote strings
+# (\"$val\") and pass numbers bare. Creates the file, replaces an existing value,
+# or inserts after the first `{`. Simple by design — no nested keys, and values
+# must not contain `,`, `}`, or sed metacharacters (font names don't).
+omac::json_set_raw() {       # omac::json_set_raw <file> <key> <raw-value>
+  local f="$1" key="$2" raw="$3"
+  local tmp="$f.omac.tmp"    # separate line: zsh can't read $f on its own local
+  mkdir -p "${f:h}"
+  if [[ ! -f "$f" ]]; then
+    printf '{\n  "%s": %s\n}\n' "$key" "$raw" > "$f"
+    return 0
+  fi
+  if grep -q "\"$key\"" "$f"; then
+    sed -E 's#("'"$key"'"[[:space:]]*:[[:space:]]*)[^,}]*#\1'"$raw"'#' "$f" > "$tmp" && mv "$tmp" "$f"
+  else
+    awk -v line="  \"$key\": $raw," '
+      !done && /\{/ { print; print line; done=1; next } { print }
+    ' "$f" > "$tmp" && mv "$tmp" "$f"
+  fi
+}
+
+# Send <signal> to every process whose executable basename is <name>.
+# pkill can't reach macOS app bundles: the kernel proc name it matches against
+# is the executable *path* truncated to 16 chars ("/Applications/Gh" for
+# Ghostty), so `pkill -x ghostty` silently signals nothing. ps reports the full
+# executable path, so match its basename and signal directly. Best-effort:
+# always returns 0 (nothing running is fine). `command kill` so tests can stub
+# the external kill instead of hitting the zsh builtin.
+omac::signal_app() {         # omac::signal_app <signal> <exe-basename>
+  local sig="$1" name="$2" pid comm
+  ps -axo pid=,comm= 2>/dev/null | while read -r pid comm; do
+    [[ "${comm:t:l}" == "${name:l}" ]] && command kill "-$sig" "$pid" 2>/dev/null
+  done
+  return 0
 }

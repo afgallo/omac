@@ -25,6 +25,9 @@ export OMAC_CONFIG="$(mktemp -d)"
 export OMAC_CURRENT="$OMAC_CONFIG/current"
 export OMAC_DEFAULT_THEME="tokyo-night"
 export HOME="$(mktemp -d)"
+export OMAC_HOME="$ROOT"              # so theme.zsh loads the sibling font module
+export OMAC_FONTS="$ROOT/fonts"       # font seam (ensure_ghostty_seam) reads the registry
+export OMAC_DEFAULT_FONT="jetbrains-mono"
 _theme_stub_setup
 source "$ROOT/lib/theme.zsh"
 

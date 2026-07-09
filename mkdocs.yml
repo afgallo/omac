@@ -78,6 +78,7 @@ nav:
       - shell: commands/shell.md
       - wm: commands/wm.md
       - theme: commands/theme.md
+      - font: commands/font.md
       - launcher: commands/launcher.md
       - update: commands/update.md
       - doctor: commands/doctor.md

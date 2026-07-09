@@ -12,6 +12,10 @@
 : ${OMAC_NVIM:="$OMAC_HOME/nvim"}   # omac-owned LazyVim plugin specs (extras + DX)
 : ${OMAC_DEFAULT_THEME:="catppuccin"}
 : ${OMAC_ACTIVE_THEME:=""}
+: ${OMAC_FONTS:="$OMAC_HOME/fonts"}   # bundled font registry (one dir per font)
+: ${OMAC_DEFAULT_FONT:="jetbrains-mono"}
+: ${OMAC_ACTIVE_FONT:=""}             # persisted in config.zsh alongside the theme
+: ${OMAC_ACTIVE_FONT_SIZE:=""}        # empty = leave each app's own default size
 : ${OMAC_APPSUPPORT:="$HOME/Library/Application Support"}  # VS Code/Cursor settings root (NOT XDG on macOS)
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
 : ${OMAC_SHELL:="$OMAC_HOME/shell"}

@@ -11,6 +11,7 @@ omac is a single dispatcher, `omac <command> [<subcommand>] [args]`. Commands li
 | [`shell`](shell.md) | Configure the interactive shell (aliases, tools, Starship prompt) |
 | [`wm`](wm.md) | Configure the desktop (AeroSpace + SketchyBar) and apply macOS tweaks |
 | [`theme`](theme.md) | Switch the desktop theme (terminal, editor, topbar, wallpaper) |
+| [`font`](font.md) | Switch the mono font across the terminal (and its TUIs) and editors |
 | [`launcher`](launcher.md) | Guide Raycast first-run (free ⌘Space, hand-hold GUI steps) |
 | [`update`](update.md) | Update omac (git pull, brew bundle, run migrations) |
 | [`doctor`](doctor.md) | Check the omac install for problems |

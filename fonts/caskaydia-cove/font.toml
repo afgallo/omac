@@ -1,0 +1,4 @@
+# omac font registry entry. `family` is the exact name apps reference; `cask` is
+# the Homebrew cask that installs it (see software/groups/fonts.Brewfile).
+family = "CaskaydiaCove Nerd Font"
+cask = "font-caskaydia-cove-nerd-font"

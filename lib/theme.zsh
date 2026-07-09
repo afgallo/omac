@@ -2,24 +2,19 @@
 # software installs the apps; wm left the SketchyBar colors.sh seam for this.
 # All logic lives here; cmd/theme/* stay thin. Functions namespaced omac::theme::*.
 
+# The font seam is a sibling module: theme::set/wire delegate the ghostty font
+# include to omac::font::ensure_ghostty_seam so a theme switch preserves the
+# typeface. Guarded so unit tests that source theme.zsh in isolation still load.
+[[ -f "$OMAC_HOME/lib/font.zsh" ]] && source "$OMAC_HOME/lib/font.zsh"
+
 # Deploy root. One place so tests redirect via XDG_CONFIG_HOME.
 omac::theme::config_dir() {
   print -r -- "${XDG_CONFIG_HOME:-$HOME/.config}"
 }
 
-# Read `key = "value"` from a flat TOML-ish file (colors.toml / apps.toml).
-# Prints the unquoted value; empty + return 1 if the key is absent.
-omac::theme::toml_get() {        # <file> <key>
-  local file="$1" key="$2" line
-  [[ -f "$file" ]] || return 1
-  line="$(grep -E "^[[:space:]]*${key}[[:space:]]*=" "$file" 2>/dev/null | head -1)" || true
-  [[ -n "$line" ]] || return 1
-  line="${line#*=}"                       # drop `key =`
-  line="${line##[[:space:]]}"             # trim leading space
-  line="${line%%[[:space:]]}"             # trim trailing space
-  line="${line#\"}"; line="${line%\"}"    # strip surrounding quotes
-  print -r -- "$line"
-}
+# Flat-TOML reader now lives in common.zsh (shared with the font module).
+# Kept as a thin alias so the many omac::theme::toml_get call sites stay put.
+omac::theme::toml_get() { omac::toml_get "$@"; }        # <file> <key>
 
 # Print bundled theme basenames, sorted.
 omac::theme::list_names() {
@@ -58,23 +53,20 @@ omac::theme::hex_to_sb() {       # <#rrggbb>
   print -r -- "0xff$h"
 }
 
-# Ghostty fragment: a built-in name if apps.toml has one, else a palette block.
+# Ghostty color fragment: a built-in name if apps.toml has one, else a palette
+# block. Font lives in a separate omac-font.conf (see lib/font.zsh) so the theme
+# and font seams stay orthogonal — a theme switch never touches the typeface.
 omac::theme::render_ghostty() {  # <name> <dest-file>
   local name="$1" dest="$2" dir="$OMAC_THEMES/$1"
   local builtin; builtin="$(omac::theme::toml_get "$dir/apps.toml" ghostty)" || builtin=""
   mkdir -p "${dest:h}"
-  # A Nerd Font so the Starship prompt's git/powerline glyphs actually render;
-  # omac installs it via software/groups/fonts.Brewfile. Emitted for both the
-  # built-in-theme and palette branches so it's present regardless of theme.
-  local font='font-family = "JetBrainsMono Nerd Font"'
   if [[ -n "$builtin" ]]; then
-    print -rl -- "$font" "theme = $builtin" > "$dest"
+    print -r -- "theme = $builtin" > "$dest"
     return 0
   fi
   # Palette fallback — Ghostty accepts hex without '#' for fg/bg/cursor.
   local pal="$dir/colors.toml" k v i
   {
-    print -r -- "$font"
     for k in foreground background; do
       v="$(omac::theme::toml_get "$pal" "$k")" && print -r -- "$k = ${v#\#}"
     done
@@ -175,21 +167,6 @@ omac::theme::first_background() {    # <name>
 
 # --- System appliers (side effects: osascript / editor settings) -------------
 
-# Send <signal> to every process whose executable basename is <name>.
-# pkill can't reach macOS app bundles: the kernel proc name it matches against
-# is the executable *path* truncated to 16 chars ("/Applications/Gh" for
-# Ghostty), so `pkill -x ghostty` silently signals nothing. ps reports the full
-# executable path, so match its basename and signal directly. Best-effort:
-# always returns 0 (nothing running is fine). `command kill` so tests can stub
-# the external kill instead of hitting the zsh builtin.
-omac::theme::signal_app() {      # <signal> <exe-basename>
-  local sig="$1" name="$2" pid comm
-  ps -axo pid=,comm= 2>/dev/null | while read -r pid comm; do
-    [[ "${comm:t:l}" == "${name:l}" ]] && command kill "-$sig" "$pid" 2>/dev/null
-  done
-  return 0
-}
-
 # macOS light/dark. Live via System Events.
 omac::theme::apply_appearance() {    # <name>
   local dark=true
@@ -218,20 +195,7 @@ omac::theme::apply_wallpaper() {     # <name>
 
 # Write workbench.colorTheme into one editor settings file (create/replace/insert).
 omac::theme::_vscode_write() {       # <colorTheme> <settings-file>
-  local name="$1" f="$2" tmp
-  mkdir -p "${f:h}"
-  if [[ ! -f "$f" ]]; then
-    printf '{\n  "workbench.colorTheme": "%s"\n}\n' "$name" > "$f"
-    return 0
-  fi
-  tmp="$f.omac.tmp"
-  if grep -q '"workbench.colorTheme"' "$f"; then
-    sed -E 's/("workbench\.colorTheme"[[:space:]]*:[[:space:]]*")[^"]*(")/\1'"$name"'\2/' "$f" > "$tmp" && mv "$tmp" "$f"
-  else
-    awk -v v="  \"workbench.colorTheme\": \"$name\"," '
-      !done && /\{/ { print; print v; done=1; next } { print }
-    ' "$f" > "$tmp" && mv "$tmp" "$f"
-  fi
+  omac::json_set_raw "$2" "workbench.colorTheme" "\"$1\""
 }
 
 # VS Code/Cursor settings root. NOT XDG on macOS — they read ~/Library/Application Support.
@@ -278,12 +242,10 @@ omac::theme::apply_delta() {         # <name>
 
 # --- Orchestration -----------------------------------------------------------
 
-# Rewrite the managed OMAC_ACTIVE_THEME block in config.zsh (update-safe:
-# remove then re-add, since ensure_block alone won't change an existing value).
+# Persist the active theme. config_set upserts just this key, leaving the font
+# module's OMAC_ACTIVE_FONT entry in the same managed block untouched.
 omac::theme::persist() {         # <name>
-  local file="$OMAC_CONFIG/config.zsh"
-  omac::remove_block "$file"
-  omac::ensure_block "$file" "export OMAC_ACTIVE_THEME=\"$1\""
+  omac::config_set OMAC_ACTIVE_THEME "$1"
 }
 
 # The switch: validate, repoint current, render/apply every target, persist.
@@ -304,6 +266,10 @@ omac::theme::set() {             # <name>
   omac::theme::render_ghostty "$name" "$cfg/ghostty/omac-theme.conf"
   omac::theme::render_sketchybar "$name" "$cfg/sketchybar/colors.sh"
   omac::theme::render_tmux "$name" "$cfg/tmux/omac-theme.conf"
+  # 2b. Font seam (self-heal): keep the ghostty config including omac-font.conf
+  #     and seed a default font file if absent, so the include never dangles.
+  #     Never overwrites an existing font choice — orthogonal to the theme.
+  omac::font::ensure_ghostty_seam "$cfg"
 
   # 3. Editors (best-effort): VS Code colorTheme from the theme's vscode.json.
   #    vscode.json is JSON ("name": "..."), so read it JSON-aware, not via toml_get.
@@ -334,10 +300,10 @@ omac::theme::set() {             # <name>
   # Ghostty: SIGUSR2 makes it re-read its config live (Ghostty >= 1.2; same
   # mechanism Omarchy's theme-set uses). Must go through signal_app — pkill
   # can't see the macOS app-bundle process (see signal_app).
-  omac::theme::signal_app USR2 ghostty
+  omac::signal_app USR2 ghostty
   # Neovim: SIGUSR1 fires the Signal autocmd registered by omac-themes.lua,
   # which re-reads the repointed theme symlink and re-applies the colorscheme.
-  omac::theme::signal_app USR1 nvim
+  omac::signal_app USR1 nvim
 
   # 7. Persist.
   omac::theme::persist "$name"
@@ -472,9 +438,11 @@ omac::theme::wire_nvim() {   # <cfg>
 }
 
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).
+# The ghostty config block lists both omac includes (theme colors + font); the
+# font module owns that block so the two seams stay in sync.
 omac::theme::wire() {
   local cfg; cfg="$(omac::theme::config_dir)"
-  omac::ensure_block "$cfg/ghostty/config" "config-file = $cfg/ghostty/omac-theme.conf"
+  omac::font::ensure_ghostty_seam "$cfg"
   omac::theme::wire_nvim "$cfg"
   omac::ok "wired ghostty, neovim"
 }

@@ -19,7 +19,7 @@ exit 0
 SH
     chmod +x "$dir/$name"
   done
-  # Fake process table for omac::theme::signal_app: ghostty as a macOS app
+  # Fake process table for omac::signal_app: ghostty as a macOS app
   # bundle (the shape pkill can't match — the regression this guards), nvim as
   # a plain CLI proc, plus noise that must NOT be signalled.
   cat > "$dir/ps" <<'SH'
