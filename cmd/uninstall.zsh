@@ -13,7 +13,7 @@ omac::ok "removed shell integration from $OMAC_PROFILE"
 
 # Remove the interactive-shell blocks the `shell` module wrote (no-op if absent).
 typeset rc
-for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
+for rc in "$OMAC_ZSHRC" "$OMAC_BASHRC"; do
   if [[ -f "$rc" ]] && grep -qF '>>> omac >>>' "$rc" 2>/dev/null; then
     omac::remove_block "$rc"
     omac::ok "removed shell config from ${rc:t}"

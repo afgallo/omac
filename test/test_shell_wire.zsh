@@ -3,12 +3,15 @@ emulate -L zsh
 ROOT="${0:A:h:h}"
 source "$ROOT/test/helper.zsh"
 export OMAC_HOME="$ROOT"
-source "$ROOT/lib/paths.zsh"
-source "$ROOT/lib/common.zsh"
 
-# Isolate the deploy root and HOME so we touch no real rc files.
+# Isolate the deploy root and HOME so we touch no real rc files. Must happen
+# BEFORE sourcing paths.zsh: its OMAC_ZSHRC/OMAC_BASHRC defaults derive from
+# $HOME at source time, so a late stub would leave them aimed at the real home.
 export XDG_CONFIG_HOME="$(mktemp -d)"
 export HOME="$(mktemp -d)"
+
+source "$ROOT/lib/paths.zsh"
+source "$ROOT/lib/common.zsh"
 
 # Offline stubs: TPM bootstrap must never hit the network. `git clone` fakes a
 # TPM checkout (with an install_plugins script); `tmux` is inert. GIT_LOG proves

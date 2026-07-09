@@ -83,8 +83,8 @@ omac::shell::deploy_tmux() {
 # paint the palette from the active theme so the prompt (and tmux) are colored on
 # the very first new shell — no `omac theme set` needed.
 omac::shell::install() {
-  omac::shell::wire_rc "$HOME/.zshrc"  zsh
-  omac::shell::wire_rc "$HOME/.bashrc" bash
+  omac::shell::wire_rc "$OMAC_ZSHRC"  zsh
+  omac::shell::wire_rc "$OMAC_BASHRC" bash
   omac::shell::deploy_starship
   omac::shell::deploy_tmux
   local cur
@@ -99,7 +99,7 @@ omac::shell::install() {
 omac::shell::status() {
   local rc shell wired
   printf "%-12s %s\n" "COMPONENT" "WIRED"
-  for rc shell in "$HOME/.zshrc" zsh "$HOME/.bashrc" bash; do
+  for rc shell in "$OMAC_ZSHRC" zsh "$OMAC_BASHRC" bash; do
     grep -qF '>>> omac >>>' "$rc" 2>/dev/null && wired=yes || wired=no
     printf "%-12s %s\n" "${rc:t}" "$wired"
   done

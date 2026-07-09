@@ -4,6 +4,8 @@
 : ${OMAC_STATE:="${XDG_STATE_HOME:-$HOME/.local/state}/omac"}
 : ${OMAC_MIGRATIONS_STATE:="$OMAC_STATE/migrations"}
 : ${OMAC_PROFILE:="$HOME/.zprofile"}
+: ${OMAC_ZSHRC:="$HOME/.zshrc"}     # interactive rc files the shell module wires
+: ${OMAC_BASHRC:="$HOME/.bashrc"}   # (and uninstall un-wires) — overridable for tests
 : ${OMAC_CURRENT:="$OMAC_CONFIG/current"}
 : ${OMAC_THEMES:="$OMAC_HOME/themes"}
 : ${OMAC_TEMPLATES:="$OMAC_HOME/templates"}
