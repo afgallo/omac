@@ -2,7 +2,7 @@
 
 **Omarchy-style, keyboard-driven, fully-themed desktop for macOS.**
 
-One command restyles your terminal, editor, topbar, and wallpaper. Tiling and workspaces are
+One command restyles your terminal, editor, window borders, and wallpaper. Tiling and workspaces are
 keyboard-native. Your whole toolchain installs from declarative manifests. omac is a *layer on
 top of* macOS — not a distro — so it runs safely on your existing Mac.
 
@@ -15,7 +15,7 @@ curl -fsSL https://raw.githubusercontent.com/afgallo/omac/main/boot.sh | zsh
 ## What you get
 
 - **One-command theming** — `omac theme set <name>` propagates a palette to every app at once.
-- **Keyboard-driven desktop** — AeroSpace tiling + 6 workspaces + a SketchyBar topbar.
+- **Keyboard-driven desktop** — AeroSpace tiling + 6 workspaces + a JankyBorders focus border.
 - **Declarative software** — curated Homebrew groups and `mise` runtimes, opt-in / opt-out.
 - **Idempotent installer** — a re-entrant `git`-clone bootstrap you can re-run any time.
 - **10 bundled themes** — ported from Omarchy, plus palette-derived macOS targets.

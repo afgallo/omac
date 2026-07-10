@@ -13,6 +13,6 @@ source "$ROOT/lib/wm.zsh"
 
 out="$(omac::wm::status)"
 contains "status lists aerospace"        "aerospace"  "$out"
-contains "status lists sketchybar"       "sketchybar" "$out"
+contains "status lists borders"          "borders"    "$out"
 contains "status shows aerospace deployed" "yes"      "$out"
 finish

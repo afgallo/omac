@@ -19,7 +19,7 @@ Independent sub-projects, each with its own spec → plan → build cycle, built
 
 1. **bootstrap** — the installer and the `omac` CLI command center; updates and migrations.
 2. **software** — declarative Brewfile groups + `mise` runtimes, opt-in / opt-out.
-3. **wm** — AeroSpace + SketchyBar + the global hotkey map + macOS tweaks.
+3. **wm** — AeroSpace + JankyBorders + the global hotkey map + macOS tweaks.
 4. **launcher** — Raycast: app launch, command surface, clipboard history, snippets.
 5. **theme** — the orchestration layer that ports the themes and derives the macOS targets.
 
@@ -45,7 +45,7 @@ into a separate ledger rather than blocking later ones.
 
 The theme layer is hybrid: **file-per-app** where Omarchy already had a themed config (dropped in
 almost unchanged), and **palette-derived** for the macOS-only targets Omarchy never had (macOS
-light/dark appearance, SketchyBar, Raycast, AeroSpace colors), rendered from a small `colors.toml`
+light/dark appearance, JankyBorders, Raycast, AeroSpace colors), rendered from a small `colors.toml`
 palette through a templating seam. `omac theme set` repoints the `current` symlink, re-renders the
 derived targets, and reloads each app.
 

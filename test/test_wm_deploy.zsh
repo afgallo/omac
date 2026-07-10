@@ -6,11 +6,10 @@ source "$ROOT/lib/common.zsh"
 
 # Fixture wm source tree (isolated from the repo's real wm/).
 export OMAC_WM="$(mktemp -d)/wm"
-mkdir -p "$OMAC_WM/aerospace" "$OMAC_WM/sketchybar/plugins"
-print -r -- "start-at-login = true"          > "$OMAC_WM/aerospace/aerospace.toml"
-print -r -- "source colors.sh"               > "$OMAC_WM/sketchybar/sketchybarrc"
-print -r -- "export BAR_COLOR=0x0"           > "$OMAC_WM/sketchybar/colors.sh"
-print -r -- "echo plugin"                     > "$OMAC_WM/sketchybar/plugins/clock.sh"
+mkdir -p "$OMAC_WM/aerospace" "$OMAC_WM/borders"
+print -r -- "start-at-login = true"    > "$OMAC_WM/aerospace/aerospace.toml"
+print -r -- 'source colors.sh'         > "$OMAC_WM/borders/bordersrc"
+print -r -- 'export ACTIVE_COLOR=0x0'  > "$OMAC_WM/borders/colors.sh"
 
 # Redirect the deploy root; also isolate HOME for the ~/.aerospace.toml check.
 export XDG_CONFIG_HOME="$(mktemp -d)"
@@ -31,11 +30,11 @@ setopt local_options null_glob
 backups=("$HOME"/.aerospace.toml.omac-backup.*)
 check "legacy ~/.aerospace.toml backed up" "1" "$(( ${#backups} >= 1 ))"
 
-omac::wm::deploy_sketchybar >/dev/null 2>&1
-present="$([[ -f "$XDG_CONFIG_HOME/sketchybar/sketchybarrc" ]] && print yes || print no)"
-check "sketchybarrc deployed" "yes" "$present"
-present="$([[ -f "$XDG_CONFIG_HOME/sketchybar/plugins/clock.sh" ]] && print yes || print no)"
-check "sketchybar plugin deployed (tree preserved)" "yes" "$present"
-present="$([[ -x "$XDG_CONFIG_HOME/sketchybar/sketchybarrc" ]] && print yes || print no)"
-check "sketchybarrc is executable" "yes" "$present"
+omac::wm::deploy_borders >/dev/null 2>&1
+present="$([[ -f "$XDG_CONFIG_HOME/borders/bordersrc" ]] && print yes || print no)"
+check "bordersrc deployed" "yes" "$present"
+present="$([[ -f "$XDG_CONFIG_HOME/borders/colors.sh" ]] && print yes || print no)"
+check "borders colors deployed (tree preserved)" "yes" "$present"
+present="$([[ -x "$XDG_CONFIG_HOME/borders/bordersrc" ]] && print yes || print no)"
+check "bordersrc is executable" "yes" "$present"
 finish

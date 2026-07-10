@@ -6,13 +6,6 @@ start-at-login = true
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
-# Notify SketchyBar when the focused workspace changes (native integration).
-# Must stay at the root: after a [table] header TOML would nest it (e.g. as
-# gaps.exec-on-workspace-change), which AeroSpace rejects as an unknown key.
-exec-on-workspace-change = ['/bin/bash', '-c',
-  'sketchybar --trigger aerospace_workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE'
-]
-
 # Gaps between windows and screen edges.
 [gaps]
 inner.horizontal = 8
@@ -21,6 +14,41 @@ outer.left       = 8
 outer.right      = 8
 outer.top        = 8
 outer.bottom     = 8
+
+# Float native dialogs and utility windows that make no sense tiled. Matched by
+# bundle id; extend this list as you hit more. `layout floating` drops the window
+# out of the tiling tree so it opens as a normal free-floating macOS window.
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'   # System Settings
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ActivityMonitor'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.SystemProfiler'      # System Information
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.archiveutility'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.AppStore'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.raycast.macos'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ScreenSharing'
+run = 'layout floating'
 
 [mode.main.binding]
 # Move focus (vim keys) — Omarchy SUPER+SHIFT+H/J/K/L.

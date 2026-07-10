@@ -1,6 +1,6 @@
 # omac theme
 
-Switch among the bundled themes — terminal, editor, topbar, and wallpaper at once.
+Switch among the bundled themes — terminal, editor, window borders, and wallpaper at once.
 
 ```
 omac theme install       wire apps, pre-install extensions, set default

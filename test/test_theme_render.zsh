@@ -30,7 +30,8 @@ cp "$OMAC_THEMES/named/colors.toml" "$OMAC_THEMES/palette/colors.toml"
 
 source "$ROOT/lib/theme.zsh"
 
-check "hex_to_sb" "0xff1a1b26" "$(omac::theme::hex_to_sb '#1a1b26')"
+check "hex_to_argb default alpha" "0xff1a1b26" "$(omac::theme::hex_to_argb '#1a1b26')"
+check "hex_to_argb custom alpha"  "0x401a1b26" "$(omac::theme::hex_to_argb '#1a1b26' 40)"
 
 gconf="$(mktemp)"
 omac::theme::render_ghostty named "$gconf"
@@ -43,12 +44,11 @@ contains "ghostty palette background" "background = 1a1b26" "$gout"
 contains "ghostty palette foreground" "foreground = a9b1d6" "$gout"
 contains "ghostty palette color0"     "palette = 0=#32344a" "$gout"
 
-sb="$(mktemp)"
-omac::theme::render_sketchybar named "$sb"
-sbout="$(<"$sb")"
-contains "sketchybar bar color"   "BAR_COLOR=0xff1a1b26"   "$sbout"
-contains "sketchybar label color" "LABEL_COLOR=0xffa9b1d6" "$sbout"
-contains "sketchybar accent"      "ACCENT_COLOR=0xff7aa2f7" "$sbout"
+bd="$(mktemp)"
+omac::theme::render_borders named "$bd"
+bdout="$(<"$bd")"
+contains "borders active color (accent, opaque)"    "ACTIVE_COLOR=0xff7aa2f7"   "$bdout"
+contains "borders inactive color (fg, translucent)" "INACTIVE_COLOR=0x40a9b1d6" "$bdout"
 
 # --- tmux status colors ------------------------------------------------------
 # 'named' has no color8, so pane-border falls back to foreground.

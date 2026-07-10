@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# omac — JankyBorders config (structure only). Colors live in colors.sh, which
+# the theme module owns (`omac theme set` rewrites it). Deployed to
+# ~/.config/borders/. Started by `brew services start borders`, which auto-loads
+# this file; re-running it just pushes new options to the live daemon, so it
+# doubles as the reload path after a theme switch.
+source "$HOME/.config/borders/colors.sh"
+
+borders \
+  style=round \
+  width=4.0 \
+  hidpi=off \
+  active_color="${ACTIVE_COLOR:-0xffcba6f7}" \
+  inactive_color="${INACTIVE_COLOR:-0x40cdd6f4}"

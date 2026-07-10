@@ -2,7 +2,7 @@
 
 **Omarchy-style, keyboard-driven, fully-themed desktop for macOS.**
 
-One command restyles your terminal, editor, topbar, and wallpaper. Tiling and workspaces are
+One command restyles your terminal, editor, window borders, and wallpaper. Tiling and workspaces are
 keyboard-native. Your whole toolchain installs from declarative manifests. omac is a *layer on
 top of* macOS — not a distro — so it runs safely on your existing Mac.
 
@@ -29,7 +29,7 @@ terminal and run `omac doctor`.
 - **One-command theming** — `omac theme set <name>` propagates a palette to every app at once.
 - **Modern shell** — `omac shell install` wires zsh/bash with the Starship prompt, eza/bat/fd/
   ripgrep aliases, zoxide, and fzf — all themed with the rest of the desktop.
-- **Keyboard-driven desktop** — AeroSpace tiling + 6 workspaces + a SketchyBar topbar.
+- **Keyboard-driven desktop** — AeroSpace tiling + 6 workspaces + a JankyBorders focus border.
 - **Declarative software** — curated Homebrew groups and `mise` runtimes, opt-in / opt-out.
 - **Idempotent installer** — a re-entrant `git`-clone bootstrap you can re-run any time.
 - **10 bundled themes** — catppuccin · catppuccin-latte · everforest · ethereal · gruvbox ·
@@ -40,7 +40,7 @@ terminal and run `omac doctor`.
 ```bash
 omac software install       # curated Homebrew groups + mise runtimes
 omac shell install          # Starship prompt + modern zsh/bash aliases and tools
-omac wm install             # AeroSpace + SketchyBar + macOS tweaks (guided)
+omac wm install             # AeroSpace + JankyBorders + macOS tweaks (guided)
 omac theme set kanagawa     # recolor the whole desktop
 omac help                   # list every command
 ```

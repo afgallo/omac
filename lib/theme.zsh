@@ -1,5 +1,5 @@
 # The theme engine: switch among the 10 bundled themes. Owns colors everywhere.
-# software installs the apps; wm left the SketchyBar colors.sh seam for this.
+# software installs the apps; wm left the JankyBorders colors.sh seam for this.
 # All logic lives here; cmd/theme/* stay thin. Functions namespaced omac::theme::*.
 
 # The font seam is a sibling module: theme::set/wire delegate the ghostty font
@@ -47,10 +47,11 @@ omac::theme::current() {
 
 # --- Renderers (pure: read a theme, write a target file) ---------------------
 
-# #rrggbb -> 0xffrrggbb (the 0xAARRGGBB form SketchyBar's colors.sh uses).
-omac::theme::hex_to_sb() {       # <#rrggbb>
-  local h="${1#\#}"
-  print -r -- "0xff$h"
+# #rrggbb -> 0xAARRGGBB (the form JankyBorders' colors.sh uses). Alpha defaults
+# to ff (opaque); pass a two-hex-digit alpha for translucent tones.
+omac::theme::hex_to_argb() {     # <#rrggbb> [aa]
+  local h="${1#\#}" a="${2:-ff}"
+  print -r -- "0x$a$h"
 }
 
 # Ghostty color fragment: a built-in name if apps.toml has one, else a palette
@@ -110,24 +111,24 @@ omac::theme::render_starship() {   # <name>
   omac::info "starship palette: $1"
 }
 
-# SketchyBar colors.sh from the palette (bar=bg, label=fg, accent=accent).
-omac::theme::render_sketchybar() {   # <name> <dest-file>
-  local dir="$OMAC_THEMES/$1" dest="$2" bg fg ac
-  bg="$(omac::theme::toml_get "$dir/colors.toml" background)"
+# JankyBorders colors.sh from the palette: the focused window's border is the
+# accent (opaque); unfocused windows get a faint foreground tint so their bounds
+# stay legible without competing with the focused one.
+omac::theme::render_borders() {   # <name> <dest-file>
+  local dir="$OMAC_THEMES/$1" dest="$2" fg ac
   fg="$(omac::theme::toml_get "$dir/colors.toml" foreground)"
   ac="$(omac::theme::toml_get "$dir/colors.toml" accent)"
   mkdir -p "${dest:h}"
   {
     print -r -- "#!/usr/bin/env bash"
     print -r -- "# omac — rendered by 'omac theme set'. Do not edit."
-    print -r -- "export BAR_COLOR=$(omac::theme::hex_to_sb "$bg")"
-    print -r -- "export LABEL_COLOR=$(omac::theme::hex_to_sb "$fg")"
-    print -r -- "export ACCENT_COLOR=$(omac::theme::hex_to_sb "$ac")"
+    print -r -- "export ACTIVE_COLOR=$(omac::theme::hex_to_argb "$ac")"
+    print -r -- "export INACTIVE_COLOR=$(omac::theme::hex_to_argb "$fg" 40)"
   } > "$dest"
 }
 
 # tmux status colors from the palette. tmux takes `#rrggbb` verbatim (no 0xAA
-# conversion, unlike SketchyBar). Replaces the hardcoded theme plugin an Omarchy
+# conversion, unlike JankyBorders). Replaces the hardcoded theme plugin an Omarchy
 # setup would use, so the status line follows `omac theme set`. Sourced by
 # shell/tmux.conf as ~/.config/tmux/omac-theme.conf.
 omac::theme::render_tmux() {     # <name> <dest-file>
@@ -264,7 +265,7 @@ omac::theme::set() {             # <name>
 
   # 2. Render class-A/C targets into their app locations.
   omac::theme::render_ghostty "$name" "$cfg/ghostty/omac-theme.conf"
-  omac::theme::render_sketchybar "$name" "$cfg/sketchybar/colors.sh"
+  omac::theme::render_borders "$name" "$cfg/borders/colors.sh"
   omac::theme::render_tmux "$name" "$cfg/tmux/omac-theme.conf"
   # 2b. Font seam (self-heal): keep the ghostty config including omac-font.conf
   #     and seed a default font file if absent, so the include never dangles.
@@ -294,7 +295,10 @@ omac::theme::set() {             # <name>
   omac::theme::apply_wallpaper "$name"
 
   # 6. Reload what can reload live.
-  command -v sketchybar >/dev/null 2>&1 && sketchybar --reload >/dev/null 2>&1
+  # borders: re-run the deployed bordersrc to push the new colors to the live
+  # daemon (no-op / harmless if borders isn't running).
+  local brc="$cfg/borders/bordersrc"
+  command -v borders >/dev/null 2>&1 && [[ -x "$brc" ]] && "$brc" >/dev/null 2>&1
   # tmux: re-source the rendered colors into any running server (no-op if none).
   command -v tmux >/dev/null 2>&1 && tmux source-file "$cfg/tmux/omac-theme.conf" >/dev/null 2>&1
   # Ghostty: SIGUSR2 makes it re-read its config live (Ghostty >= 1.2; same

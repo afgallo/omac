@@ -1,4 +1,4 @@
-# The wm engine: deploy AeroSpace + SketchyBar config, apply macOS tweaks, and
+# The wm engine: deploy AeroSpace + JankyBorders config, apply macOS tweaks, and
 # run guided first-run activation. Sourced by cmd/wm/* so all logic lives here.
 # Pure config layer — `software` installs the apps; `theme` owns colors.
 
@@ -19,17 +19,17 @@ omac::wm::deploy_aerospace() {
   omac::install_file "$OMAC_WM/aerospace/aerospace.toml" "$dest"
 }
 
-# Deploy the whole SketchyBar tree, preserving relative paths, and make the
-# entry point and plugins executable.
-omac::wm::deploy_sketchybar() {
+# Deploy the JankyBorders tree, preserving relative paths, and make the entry
+# point (bordersrc) executable.
+omac::wm::deploy_borders() {
   setopt local_options extended_glob null_glob
-  local src="$OMAC_WM/sketchybar" dest; dest="$(omac::wm::config_dir)/sketchybar"
+  local src="$OMAC_WM/borders" dest; dest="$(omac::wm::config_dir)/borders"
   local f rel
   for f in "$src"/**/*(.); do
     rel="${f#$src/}"
     omac::install_file "$f" "$dest/$rel" || return  # decline aborts the deploy
   done
-  chmod +x "$dest/sketchybarrc" "$dest"/plugins/*(.N) 2>/dev/null
+  chmod +x "$dest/bordersrc" 2>/dev/null
   return 0
 }
 
@@ -104,19 +104,25 @@ PLIST
 }
 
 # Reload both tools' configs (used by `omac wm reload` and after activation).
+# Re-running the deployed bordersrc pushes fresh options to the live borders
+# daemon (non-blocking when it is already running).
 omac::wm::reload() {
   omac::require_cmd aerospace || return 1
-  omac::require_cmd sketchybar || return 1
-  aerospace reload-config
-  sketchybar --reload
+  omac::require_cmd borders || return 1
+  aerospace reload-config || return   # AeroSpace failure is authoritative
+  # Refreshing the borders daemon is best-effort — a failed push must not fail
+  # the whole reload.
+  local rc; rc="$(omac::wm::config_dir)/borders/bordersrc"
+  [[ -x "$rc" ]] && "$rc" >/dev/null 2>&1
+  return 0
 }
 
-# Guided first-run activation: start the SketchyBar service, reload both, and
-# open the Accessibility pane (the one grant macOS forbids scripting).
+# Guided first-run activation: start the borders service, reload both, and open
+# the Accessibility pane (the one grant macOS forbids scripting).
 omac::wm::activate() {
   omac::require_cmd brew || return 1
-  omac::info "starting sketchybar service"
-  brew services start sketchybar
+  omac::info "starting borders service"
+  brew services start borders
   # AeroSpace start-at-login is set in aerospace.toml; reload if it is running.
   # Capture output so a config error surfaces as one clean line instead of a raw
   # dump — and so we don't imply success when the reload actually failed.
@@ -124,7 +130,8 @@ omac::wm::activate() {
   if command -v aerospace >/dev/null 2>&1; then
     out="$(aerospace reload-config 2>&1)" || omac::warn "AeroSpace config not reloaded: ${out##*$'\n'}"
   fi
-  command -v sketchybar >/dev/null 2>&1 && sketchybar --reload >/dev/null 2>&1
+  local rc; rc="$(omac::wm::config_dir)/borders/bordersrc"
+  command -v borders >/dev/null 2>&1 && [[ -x "$rc" ]] && "$rc" >/dev/null 2>&1
   omac::info "opening Accessibility settings — grant AeroSpace access there"
   open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
   omac::ok "wm activated (grant AeroSpace Accessibility to finish first run)"
@@ -136,10 +143,10 @@ omac::wm::status() {
   local cfg; cfg="$(omac::wm::config_dir)"
   local name file dep inst
   printf "%-12s %-9s %s\n" "COMPONENT" "DEPLOYED" "INSTALLED"
-  for name in aerospace sketchybar; do
+  for name in aerospace borders; do
     case "$name" in
-      aerospace)  file="$cfg/aerospace/aerospace.toml" ;;
-      sketchybar) file="$cfg/sketchybar/sketchybarrc"  ;;
+      aerospace) file="$cfg/aerospace/aerospace.toml" ;;
+      borders)   file="$cfg/borders/bordersrc"        ;;
     esac
     [[ -f "$file" ]] && dep=yes || dep=no
     command -v "$name" >/dev/null 2>&1 && inst=yes || inst=no
@@ -150,15 +157,15 @@ omac::wm::status() {
 # Orchestrate the guided first-run: guard the apps are installed, deploy both
 # configs, apply tweaks, then activate.
 omac::wm::install() {
-  if ! command -v aerospace >/dev/null 2>&1 || ! command -v sketchybar >/dev/null 2>&1; then
-    omac::error "AeroSpace and SketchyBar must be installed first"
+  if ! command -v aerospace >/dev/null 2>&1 || ! command -v borders >/dev/null 2>&1; then
+    omac::error "AeroSpace and JankyBorders must be installed first"
     omac::info "run: omac software install"
     return 1
   fi
   # A declined overwrite aborts here — don't apply tweaks or activate a
   # half-deployed config.
-  omac::wm::deploy_aerospace  || return
-  omac::wm::deploy_sketchybar || return
+  omac::wm::deploy_aerospace || return
+  omac::wm::deploy_borders   || return
   omac::wm::apply_tweaks
   omac::wm::activate
   omac::ok "wm installed"

@@ -1,4 +1,4 @@
-# help: switch among the bundled themes (terminal, editor, topbar, wallpaper)
+# help: switch among the bundled themes (terminal, editor, window borders, wallpaper)
 source "$OMAC_HOME/lib/theme.zsh"
 print -r -- "omac theme — switch the desktop theme"
 print -r -- ""

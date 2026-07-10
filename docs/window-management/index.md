@@ -1,13 +1,15 @@
 # Window Management
 
 omac's desktop is keyboard-first: [AeroSpace](https://nikitabobko.github.io/AeroSpace/) tiles
-windows across 6 workspaces, and [SketchyBar](https://felixkratz.github.io/SketchyBar/) draws the
-topbar. No second hotkey daemon — every binding lives in AeroSpace, and Raycast owns the
+windows across 6 workspaces, and [JankyBorders](https://github.com/FelixKratz/JankyBorders)
+draws a colored border around the focused window. omac stays native-first — the macOS menu bar
+keeps clock, battery, Wi-Fi, notifications, and Control Center; omac adds only what the Mac
+lacks. No second hotkey daemon — every binding lives in AeroSpace, and Raycast owns the
 command-palette surface.
 
 ```bash
 omac wm install   # deploy config, apply macOS tweaks, guided first-run
-omac wm reload    # reload AeroSpace + SketchyBar
+omac wm reload    # reload AeroSpace + borders
 omac wm status    # show what is deployed / running / granted
 ```
 
@@ -54,11 +56,25 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 | `Cmd`+`Shift`+`E` / `Y` / `X` | HEY / YouTube / X (web) |
 | `Cmd`+`Shift`+`P` | Interactive screenshot |
 
-## Topbar
+## Focus border
 
-SketchyBar renders workspace pills, a clock, and a battery indicator. Each workspace shows its
-number plus a Nerd Font glyph for every app with a window there; the focused workspace is a
-filled accent pill, and empty workspaces dim out. Battery and clock carry their own icons, and
-the battery glyph tracks the charge level (turning red when low, accent-colored while charging).
-All colors are owned by the [theme](../themes/index.md) layer, so the bar recolors with every
-`omac theme set`.
+JankyBorders draws a border around the focused window so it is always obvious where keystrokes
+go — the piece native macOS omits under tiling. The focused window gets an accent border;
+unfocused windows get a faint one. Both colors are owned by the [theme](../themes/index.md)
+layer (`active_color` = accent, `inactive_color` = a translucent foreground), so the border
+recolors with every `omac theme set`. There is no custom top bar: the native macOS menu bar
+keeps clock, battery, Wi-Fi, notifications, and Control Center. Workspaces have no on-screen
+indicator by design — `Cmd`+`1`…`6` is deterministic, so you switch by muscle memory.
+
+## Floating windows
+
+Tiling is the default, but native dialogs and utility windows make no sense tiled, so AeroSpace
+floats a starter set — System Settings, Activity Monitor, System Information, Calculator,
+Archive Utility, the App Store, Raycast, and Screen Sharing. Add more with an
+`[[on-window-detected]]` rule in `wm/aerospace/aerospace.toml`:
+
+```toml
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+```

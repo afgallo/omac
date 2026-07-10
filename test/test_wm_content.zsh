@@ -6,11 +6,15 @@ source "$ROOT/test/helper.zsh"
 toml="$ROOT/wm/aerospace/aerospace.toml"
 check "aerospace.toml present" "yes" "$([[ -f "$toml" ]] && print yes || print no)"
 
-# Root-level callbacks (e.g. exec-on-workspace-change) must appear BEFORE the
-# first [table] header — otherwise TOML nests them (gaps.exec-on-workspace-change)
-# and AeroSpace rejects the config as an unknown key.
-first_table="$(grep -nE '^\[' "$toml" | head -1 | cut -d: -f1)"
-exec_line="$(grep -nE '^exec-on-workspace-change' "$toml" | head -1 | cut -d: -f1)"
-check "exec-on-workspace-change is a root key" "yes" \
-  "$([[ -n "$exec_line" && -n "$first_table" && "$exec_line" -lt "$first_table" ]] && print yes || print no)"
+# Float rules are a top-level array-of-tables. Each `[[on-window-detected]]`
+# header must sit at column 0 (not indented under another [table]) or TOML would
+# nest it and AeroSpace would reject the config. Every rule also needs a `run =`.
+rule_headers="$(grep -cE '^\[\[on-window-detected\]\]' "$toml")"
+run_lines="$(grep -cE "^run = 'layout floating'" "$toml")"
+check "float rules present" "yes" "$([[ "$rule_headers" -ge 1 ]] && print yes || print no)"
+check "every float rule is a top-level table with a run" "yes" \
+  "$([[ "$rule_headers" -eq "$run_lines" ]] && print yes || print no)"
+# No `[[on-window-detected]]` may appear indented (which would nest it).
+check "no indented on-window-detected header" "no" \
+  "$([[ -n "$(grep -E '^[[:space:]]+\[\[on-window-detected\]\]' "$toml")" ]] && print yes || print no)"
 finish

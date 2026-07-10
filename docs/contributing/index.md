@@ -8,7 +8,7 @@ boot.sh          # curl … | zsh bootstrap installer
 cmd/             # one file per command; cmd/<x>/<sub>.zsh for nested subcommands
 lib/             # namespaced engines (theme, wm, software, migrate, …)
 software/        # Brewfile groups + runtimes.manifest
-wm/              # aerospace.toml, sketchybar config + plugins, macOS tweaks
+wm/              # aerospace.toml, borders config, macOS tweaks
 themes/          # bundled themes (per-app files + colors.toml)
 templates/       # palette-rendered templates for macOS-only targets
 migrations/      # ordered migration scripts

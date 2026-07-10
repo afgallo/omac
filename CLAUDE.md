@@ -25,7 +25,7 @@ Five modules, built in order, each an independent sub-project:
 
 The **theme seam** is hybrid: file-per-app configs dropped in almost unchanged where Omarchy already
 had them, and palette-derived rendering (from a small `colors.toml`) for macOS-only targets
-(appearance, SketchyBar, Raycast, AeroSpace). `omac theme set` repoints the `~/.config/omac/current`
+(appearance, JankyBorders, Raycast, AeroSpace). `omac theme set` repoints the `~/.config/omac/current`
 symlink, re-renders derived targets, and reloads each app.
 
 ## Conventions

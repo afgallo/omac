@@ -16,10 +16,10 @@ export HOME="$(mktemp -d)"
 
 # Fixture wm source tree.
 export OMAC_WM="$(mktemp -d)/wm"
-mkdir -p "$OMAC_WM/aerospace" "$OMAC_WM/sketchybar/plugins"
-print -r -- "start-at-login = true" > "$OMAC_WM/aerospace/aerospace.toml"
-print -r -- "source colors.sh"      > "$OMAC_WM/sketchybar/sketchybarrc"
-print -r -- "export BAR_COLOR=0x0"  > "$OMAC_WM/sketchybar/colors.sh"
+mkdir -p "$OMAC_WM/aerospace" "$OMAC_WM/borders"
+print -r -- "start-at-login = true"          > "$OMAC_WM/aerospace/aerospace.toml"
+print -r -- 'source colors.sh'               > "$OMAC_WM/borders/bordersrc"
+print -r -- 'export ACTIVE_COLOR=0x0'        > "$OMAC_WM/borders/colors.sh"
 print -r -- "NSGlobalDomain KeyRepeat int 2" > "$OMAC_WM/tweaks.conf"
 
 _wm_stub_setup
@@ -46,6 +46,6 @@ contains "cli reload hit aerospace" "reload-config" "$(<"$AEROSPACE_LOG")"
 
 # status
 listout="$(zsh "$fake/bin/omac" wm status)"
-contains "status shows aerospace"  "aerospace"  "$listout"
-contains "status shows sketchybar" "sketchybar" "$listout"
+contains "status shows aerospace" "aerospace" "$listout"
+contains "status shows borders"   "borders"   "$listout"
 finish

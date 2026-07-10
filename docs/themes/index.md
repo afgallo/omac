@@ -2,7 +2,7 @@
 
 A theme in omac is a whole-desktop palette. `omac theme set <name>` repoints the active-theme
 symlink, renders the palette-derived macOS targets from templates, and reloads each app — so your
-terminal, editor, topbar, and wallpaper change together, instantly.
+terminal, editor, window borders, and wallpaper change together, instantly.
 
 ## Bundled themes
 
@@ -35,7 +35,7 @@ Each `themes/<name>/` directory holds two things:
   Neovim (as [LazyVim](https://www.lazyvim.org)), bat, delta, lazygit, wallpaper,
   and more). These drop in almost unchanged.
 - **A `colors.toml` palette** — for the targets Omarchy never had a per-app file for (macOS
-  light/dark appearance, SketchyBar, the [Starship](../commands/shell.md#starship-theming) prompt,
+  light/dark appearance, JankyBorders, the [Starship](../commands/shell.md#starship-theming) prompt,
   Raycast, AeroSpace accent/border colors, and the tmux status line), omac *derives* the config
   from this palette through a templating seam. Nothing to hand-port. tmux status colors are
   re-sourced into any running server, so a theme switch recolors tmux live.

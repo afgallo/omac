@@ -1,17 +1,17 @@
 # Shared wm test stubs: fake system binaries on PATH that log their args.
 # Call _wm_stub_setup AFTER exporting OMAC_*/XDG_CONFIG_HOME. Exposes one
 # <NAME>_LOG per binary (uppercased): DEFAULTS_LOG, HIDUTIL_LOG, OPEN_LOG,
-# BREW_LOG, AEROSPACE_LOG, SKETCHYBAR_LOG, LAUNCHCTL_LOG. Also redirects the
+# BREW_LOG, AEROSPACE_LOG, BORDERS_LOG, LAUNCHCTL_LOG. Also redirects the
 # Caps->Escape LaunchAgent into a temp dir (OMAC_LAUNCHAGENTS) so tests never
 # touch the real ~/Library/LaunchAgents.
 _wm_stub_setup() {
   local dir; dir="$(mktemp -d)"
   export OMAC_LAUNCHAGENTS="$dir/LaunchAgents"
   export DEFAULTS_LOG="$(mktemp)" HIDUTIL_LOG="$(mktemp)" OPEN_LOG="$(mktemp)" \
-         BREW_LOG="$(mktemp)" AEROSPACE_LOG="$(mktemp)" SKETCHYBAR_LOG="$(mktemp)" \
+         BREW_LOG="$(mktemp)" AEROSPACE_LOG="$(mktemp)" BORDERS_LOG="$(mktemp)" \
          LAUNCHCTL_LOG="$(mktemp)"
   local name var
-  for name in defaults hidutil open brew aerospace sketchybar launchctl; do
+  for name in defaults hidutil open brew aerospace borders launchctl; do
     var="${(U)name}_LOG"
     cat > "$dir/$name" <<SH
 #!/usr/bin/env zsh

@@ -30,6 +30,14 @@ export OMAC_DEFAULT_FONT="jetbrains-mono"
 _theme_stub_setup
 source "$ROOT/lib/theme.zsh"
 
+# Seed a deployed bordersrc so the live-reload step (which re-runs it) is
+# observable via the `borders` stub. `theme` renders colors.sh; `wm` owns
+# bordersrc, so it may pre-exist independently of a theme switch.
+mkdir -p "$XDG_CONFIG_HOME/borders"
+print -r -- '#!/usr/bin/env bash' >  "$XDG_CONFIG_HOME/borders/bordersrc"
+print -r -- 'borders reload'       >> "$XDG_CONFIG_HOME/borders/bordersrc"
+chmod +x "$XDG_CONFIG_HOME/borders/bordersrc"
+
 # Unknown theme -> hard error.
 omac::theme::set nope >/dev/null 2>&1
 check "unknown theme exits 1" "1" "$?"
@@ -47,7 +55,7 @@ check "ghostty theme render has no font" "no" \
   "$([[ "$(<"$XDG_CONFIG_HOME/ghostty/omac-theme.conf")" == *font-family* ]] && print yes || print no)"
 contains "ghostty config includes font conf" "omac-font.conf" "$(<"$XDG_CONFIG_HOME/ghostty/config")"
 contains "default font seeded" 'font-family = "JetBrainsMono Nerd Font"' "$(<"$XDG_CONFIG_HOME/ghostty/omac-font.conf")"
-contains "sketchybar rendered" "BAR_COLOR=0xff1a1b26" "$(<"$XDG_CONFIG_HOME/sketchybar/colors.sh")"
+contains "borders rendered" "ACTIVE_COLOR=0xff7aa2f7" "$(<"$XDG_CONFIG_HOME/borders/colors.sh")"
 contains "tmux colors rendered" 'status-style "bg=#1a1b26,fg=#a9b1d6"' "$(<"$XDG_CONFIG_HOME/tmux/omac-theme.conf")"
 contains "tmux live-reloaded" "source-file $XDG_CONFIG_HOME/tmux/omac-theme.conf" "$(<"$TMUX_LOG")"
 # signal_app resolves PIDs from the ps stub's fake table (see theme_stubs.zsh):
@@ -60,7 +68,7 @@ check "unrelated processes not signalled" "0" "$present"
 contains "vscode colorTheme from vscode.json" "Tokyo Night" "$(<"$OMAC_APPSUPPORT/Code/User/settings.json")"
 contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "01-wall.jpg" "$(<"$WALLPAPER_LOG")"
-contains "sketchybar reloaded" "--reload" "$(<"$SKETCHYBAR_LOG")"
+contains "borders reloaded" "reload" "$(<"$BORDERS_LOG")"
 contains "selection persisted" 'OMAC_ACTIVE_THEME="tokyo-night"' "$(<"$OMAC_CONFIG/config.zsh")"
 # `set` self-heals Neovim: scaffolds LazyVim and links the themed plugin even
 # when the machine was never `install`-ed (regression: set-before-install).

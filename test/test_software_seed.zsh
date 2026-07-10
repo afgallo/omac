@@ -22,6 +22,6 @@ contains "ai has opencode"      "opencode"     "$(<"$ROOT/software/groups/ai.Bre
 contains "guis has ghostty"     "ghostty"      "$(<"$ROOT/software/groups/guis.Brewfile")"
 contains "guis has lastpass"    "lastpass"     "$(<"$ROOT/software/groups/guis.Brewfile")"
 contains "guis has aerospace"   "nikitabobko/tap/aerospace" "$(<"$ROOT/software/groups/guis.Brewfile")"
-contains "guis has sketchybar"  "FelixKratz/formulae/sketchybar" "$(<"$ROOT/software/groups/guis.Brewfile")"
+contains "guis has borders"     "FelixKratz/formulae/borders" "$(<"$ROOT/software/groups/guis.Brewfile")"
 contains "runtimes node lts"    "node@lts"     "$(<"$ROOT/software/runtimes.manifest")"
 finish
