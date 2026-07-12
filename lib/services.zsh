@@ -19,17 +19,18 @@ omac::services::deploy() {
   omac::install_file "$OMAC_SERVICES_SRC/.env"               "$OMAC_SERVICES_CONFIG/.env"               || return 1
 }
 
-# Run `docker compose` against the deployed stack, wherever it lives. Passes
-# --project-directory so compose auto-loads the sibling .env. Fails clearly if
-# the stack was never deployed.
+# Run `docker compose` against the deployed stack. Runs from the config dir in a
+# subshell so compose picks it up as the project directory and auto-loads the
+# sibling .env — portable across compose versions (some bundled plugins, e.g.
+# colima's, lack the --project-directory flag). Fails clearly if never deployed.
 omac::services::compose() {   # <compose-args...>
   omac::require_cmd docker || return 1
-  local file="$OMAC_SERVICES_CONFIG/docker-compose.yml"
-  if [[ ! -f "$file" ]]; then
-    omac::error "no stack deployed at $file — run: omac services up"
+  local dir="$OMAC_SERVICES_CONFIG"
+  if [[ ! -f "$dir/docker-compose.yml" ]]; then
+    omac::error "no stack deployed at $dir/docker-compose.yml — run: omac services up"
     return 1
   fi
-  docker compose --project-directory "$OMAC_SERVICES_CONFIG" -f "$file" "$@"
+  ( cd "$dir" && docker compose -f docker-compose.yml "$@" )
 }
 
 # Ensure the Colima Docker daemon is running (start it with our defaults if not).
