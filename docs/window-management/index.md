@@ -33,7 +33,7 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 | `Cmd`+`/` | Toggle tiles ↔ accordion |
 | `Cmd`+`,` | Toggle floating ↔ tiling |
 | `Cmd`+`F` | macOS native fullscreen |
-| `Cmd`+`Q` | Close window |
+| `Cmd`+`Q` | Quit focused app (native macOS quit) |
 | `Cmd`+`R` | Enter resize mode |
 
 ## Workspaces

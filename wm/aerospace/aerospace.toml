@@ -68,8 +68,10 @@ cmd-slash = 'layout tiles accordion'   # toggle split style
 cmd-comma = 'layout floating tiling'   # toggle float
 cmd-f     = 'macos-native-fullscreen'
 
-# Close the focused window — Omarchy SUPER+Q (intentionally overrides macOS quit).
-cmd-q = 'close'
+# Quit the focused app — Omarchy SUPER+Q, mapped to macOS's native "quit" so the
+# app fully exits (not just its window). AeroSpace has no quit primitive, so ask
+# the frontmost process to quit via osascript.
+cmd-q = 'exec-and-forget osascript -e ''tell application "System Events" to set p to name of first application process whose frontmost is true'' -e ''tell application p to quit'''
 
 # Switch workspace — Omarchy SUPER+1..6.
 cmd-1 = 'workspace 1'
@@ -101,7 +103,7 @@ cmd-shift-s   = 'exec-and-forget open -a Slack'
 cmd-shift-m   = 'exec-and-forget open -a Spotify'
 cmd-shift-g   = 'exec-and-forget open -a Signal'
 cmd-shift-a   = 'exec-and-forget open https://chatgpt.com'
-cmd-shift-c   = 'exec-and-forget open https://claude.ai'
+cmd-shift-c   = 'exec-and-forget open -a Claude'
 cmd-shift-e   = 'exec-and-forget open https://app.hey.com'
 cmd-shift-y   = 'exec-and-forget open https://youtube.com'
 cmd-shift-x   = 'exec-and-forget open https://x.com'
