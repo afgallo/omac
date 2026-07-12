@@ -19,6 +19,7 @@ Each group is a Brewfile under `software/groups/`.
 | `shell` | `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `fd`, `git-delta`, `starship`, `jq`, `tree`, `fastfetch`, `awscli` |
 | `ides` | Visual Studio Code, Cursor, Zed, Neovim + [LazyVim](https://www.lazyvim.org) |
 | `tuis` | `tmux`, `lazygit`, `lazydocker`, `htop`, `pgcli` |
+| `containers` | `colima` (Docker daemon in a Lima VM), `docker` CLI, `docker-compose` — see [Services](../services/index.md) |
 | `guis` | Obsidian, Typora, LocalSend, mpv, Flameshot, **Ghostty** (default terminal), **Raycast** |
 | `fonts` | JetBrainsMono, FiraCode, Hack, CaskaydiaCove — all Nerd Fonts |
 

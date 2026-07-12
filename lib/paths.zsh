@@ -20,6 +20,9 @@
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
 : ${OMAC_SHELL:="$OMAC_HOME/shell"}
 : ${OMAC_WM:="$OMAC_HOME/wm"}
+# services: the default dev stack (postgres + redis via docker/colima).
+: ${OMAC_SERVICES_SRC:="$OMAC_HOME/services"}          # read-only repo source
+: ${OMAC_SERVICES_CONFIG:="$OMAC_CONFIG/services"}     # deployed, user-editable
 # launcher: internal seams (not user-facing). Raycast ships no PATH binary, so we
 # detect its app bundle; activateSettings is a fixed private-framework binary.
 : ${OMAC_RAYCAST_APP:="/Applications/Raycast.app"}

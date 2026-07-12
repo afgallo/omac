@@ -31,6 +31,8 @@ terminal and run `omac doctor`.
   ripgrep aliases, zoxide, and fzf — all themed with the rest of the desktop.
 - **Keyboard-driven desktop** — AeroSpace tiling + 6 workspaces + a JankyBorders focus border.
 - **Declarative software** — curated Homebrew groups and `mise` runtimes, opt-in / opt-out.
+- **Default dev stack** — `omac services up` runs Postgres + Redis on a lightweight Colima Docker
+  daemon, up at login out of the box.
 - **Idempotent installer** — a re-entrant `git`-clone bootstrap you can re-run any time.
 - **10 bundled themes** — catppuccin · catppuccin-latte · everforest · ethereal · gruvbox ·
   kanagawa · nord · ristretto · rose-pine · tokyo-night.
@@ -39,6 +41,7 @@ terminal and run `omac doctor`.
 
 ```bash
 omac software install       # curated Homebrew groups + mise runtimes
+omac services up            # Postgres + Redis on colima, up at login
 omac shell install          # Starship prompt + modern zsh/bash aliases and tools
 omac wm install             # AeroSpace + JankyBorders + macOS tweaks (guided)
 omac theme set kanagawa     # recolor the whole desktop
