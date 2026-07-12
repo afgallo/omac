@@ -14,9 +14,11 @@ for f in aerospace/aerospace.toml borders/bordersrc borders/colors.sh tweaks.con
 done
 
 aero="$(<"$ROOT/wm/aerospace/aerospace.toml")"
+contains "aerospace uses config-version 2" "config-version = 2"          "$aero"
+contains "aerospace persists 6 workspaces" "persistent-workspaces = ['1', '2', '3', '4', '5', '6']" "$aero"
 contains "aerospace starts at login"     "start-at-login = true"        "$aero"
 contains "aerospace binds cmd modifier"  "cmd-1 = 'workspace 1'"        "$aero"
-contains "aerospace quits app on cmd-q"  "cmd-q = 'exec-and-forget osascript" "$aero"
+contains "aerospace quits app on cmd-q"  'cmd-q = "exec-and-forget osascript' "$aero"
 contains "aerospace floats system settings" "com.apple.systempreferences" "$aero"
 contains "aerospace float rule runs floating" "run = 'layout floating'" "$aero"
 # Default is 6 workspaces: the 6th is bound, the 7th is not.

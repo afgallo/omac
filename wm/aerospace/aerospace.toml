@@ -2,9 +2,16 @@
 # the theme module). Modifier = Cmd, mirroring the user's Omarchy SUPER map.
 # Deployed to ${XDG_CONFIG_HOME:-$HOME/.config}/aerospace/aerospace.toml.
 
+# Config schema version. v2 no longer infers persistent workspaces from bindings,
+# so they're declared explicitly below.
+config-version = 2
+
 start-at-login = true
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
+
+# Keep workspaces 1–6 alive even when empty (v1 inferred this from the bindings).
+persistent-workspaces = ['1', '2', '3', '4', '5', '6']
 
 # Gaps between windows and screen edges.
 [gaps]
@@ -71,7 +78,7 @@ cmd-f     = 'macos-native-fullscreen'
 # Quit the focused app — Omarchy SUPER+Q, mapped to macOS's native "quit" so the
 # app fully exits (not just its window). AeroSpace has no quit primitive, so ask
 # the frontmost process to quit via osascript.
-cmd-q = 'exec-and-forget osascript -e ''tell application "System Events" to set p to name of first application process whose frontmost is true'' -e ''tell application p to quit'''
+cmd-q = "exec-and-forget osascript -e 'tell application \"System Events\" to set p to name of first application process whose frontmost is true' -e 'tell application p to quit'"
 
 # Switch workspace — Omarchy SUPER+1..6.
 cmd-1 = 'workspace 1'
