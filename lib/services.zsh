@@ -19,10 +19,23 @@ omac::services::deploy() {
   omac::install_file "$OMAC_SERVICES_SRC/.env"               "$OMAC_SERVICES_CONFIG/.env"               || return 1
 }
 
-# Run `docker compose` against the deployed stack. Runs from the config dir in a
-# subshell so compose picks it up as the project directory and auto-loads the
-# sibling .env — portable across compose versions (some bundled plugins, e.g.
-# colima's, lack the --project-directory flag). Fails clearly if never deployed.
+# Resolve the compose command words. Prefer the `docker compose` plugin (Docker
+# Desktop), fall back to the standalone `docker-compose` binary — brew's `docker`
+# formula ships no compose plugin, so on a colima box only the standalone binary
+# (from the containers Brewfile) exists. Prints the command; non-zero if neither.
+omac::services::compose_cmd() {
+  if docker compose version >/dev/null 2>&1; then
+    print -r -- "docker compose"
+  elif command -v docker-compose >/dev/null 2>&1; then
+    print -r -- "docker-compose"
+  else
+    return 1
+  fi
+}
+
+# Run compose against the deployed stack. Runs from the config dir in a subshell
+# so compose treats it as the project directory and auto-loads the sibling .env.
+# Fails clearly if the stack was never deployed or no compose command exists.
 omac::services::compose() {   # <compose-args...>
   omac::require_cmd docker || return 1
   local dir="$OMAC_SERVICES_CONFIG"
@@ -30,7 +43,12 @@ omac::services::compose() {   # <compose-args...>
     omac::error "no stack deployed at $dir/docker-compose.yml — run: omac services up"
     return 1
   fi
-  ( cd "$dir" && docker compose -f docker-compose.yml "$@" )
+  local -a cc
+  if ! cc=(${=$(omac::services::compose_cmd)}); then
+    omac::error "no compose found — run: omac software install containers"
+    return 1
+  fi
+  ( cd "$dir" && "${cc[@]}" -f docker-compose.yml "$@" )
 }
 
 # Ensure the Colima Docker daemon is running (start it with our defaults if not).

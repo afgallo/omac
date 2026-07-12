@@ -14,7 +14,18 @@ print -r -- "$*" >> "$COLIMA_LOG"
 [[ "$1" == "status" ]] && exit "${COLIMA_RUNNING:-1}"
 exit 0
 SH
+  # docker CLI stand-in with NO bundled compose plugin (like brew's docker
+  # formula): `docker compose …` fails, so the engine falls back to the
+  # standalone docker-compose binary below.
   cat > "$dir/docker" <<'SH'
+#!/usr/bin/env zsh
+print -r -- "$*" >> "$DOCKER_LOG"
+[[ "$1" == "compose" ]] && exit 1
+exit 0
+SH
+  # Standalone docker-compose (installed by the containers Brewfile). Logs to the
+  # same file so the CLI tests can assert on compose subcommands.
+  cat > "$dir/docker-compose" <<'SH'
 #!/usr/bin/env zsh
 print -r -- "$*" >> "$DOCKER_LOG"
 exit 0
@@ -24,6 +35,6 @@ SH
 print -r -- "$*" >> "$LAUNCHCTL_LOG"
 exit 0
 SH
-  chmod +x "$dir/colima" "$dir/docker" "$dir/launchctl"
+  chmod +x "$dir/colima" "$dir/docker" "$dir/docker-compose" "$dir/launchctl"
   export PATH="$dir:$PATH"
 }
