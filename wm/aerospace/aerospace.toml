@@ -75,6 +75,12 @@ cmd-slash = 'layout tiles accordion'   # toggle split style
 cmd-comma = 'layout floating tiling'   # toggle float
 cmd-f     = 'macos-native-fullscreen'
 
+# One-key resize of the focused window — Omarchy SUPER+-/=. AeroSpace resizes by
+# width magnitude (no directional grow), so '=' widens and '-' narrows, mirroring
+# the resize sub-mode's l/h. The tiling neighbour gives/takes the reclaimed space.
+cmd-minus = 'resize width -50'
+cmd-equal = 'resize width +50'
+
 # Quit the focused app — Omarchy SUPER+Q, mapped to macOS's native "quit" so the
 # app fully exits (not just its window). AeroSpace has no quit primitive, so ask
 # the frontmost process to quit via osascript.
