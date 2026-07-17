@@ -25,6 +25,11 @@ check "comment line skipped" "no" "$([[ "$dlog" == *comment* ]] && print yes || 
 
 contains "caps remapped via hidutil" "UserKeyMapping" "$(<"$HIDUTIL_LOG")"
 
+# apply_tweaks also frees macOS's ⇧⌘3/4/5 screenshot hotkeys so they stop
+# clobbering AeroSpace's cmd-shift-3/4/5 window-move binds.
+contains "freed ⇧⌘3/4/5 screenshots" "write com.apple.symbolichotkeys" "$dlog"
+contains "applied hotkey change live" "-u" "$(<"$ACTIVATE_LOG")"
+
 # Persistence: a LaunchAgent must be written and bootstrapped so the remap
 # survives a reboot (hidutil alone is session-scoped).
 plist="$OMAC_LAUNCHAGENTS/com.omac.capsescape.plist"

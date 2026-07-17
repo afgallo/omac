@@ -52,7 +52,40 @@ omac::wm::apply_tweaks() {
     done < "$manifest"
   fi
   omac::wm::remap_caps_escape
+  omac::wm::disable_screenshot_hotkeys
   omac::ok "tweaks applied"
+}
+
+# Push symbolic-hotkey changes to the live session. OMAC_ACTIVATE_SETTINGS is the
+# private-framework binary (test seam, see lib/paths.zsh); if it is missing, fall
+# back to a re-login hint (non-fatal). Mirrors lib/launcher.zsh.
+omac::wm::apply_hotkey_settings() {
+  if [[ -x "$OMAC_ACTIVATE_SETTINGS" ]]; then
+    "$OMAC_ACTIVATE_SETTINGS" -u
+  else
+    omac::warn "log out and back in for the screenshot-shortcut change to take effect"
+  fi
+}
+
+# Free macOS's ⇧⌘3/4/5 screenshot shortcuts (symbolic hotkeys 28/30/184) so they
+# stop clobbering AeroSpace's cmd-shift-3/4/5 → move-node-to-workspace binds. The
+# cmd-shift-p bind (screencapture -i) and the Screenshot app stay the screenshot
+# entry points.
+# Idempotent: re-asserting the same dict via `defaults -dict-add` is a no-op. Each
+# value dict reproduces the macOS default binding (parameters = ascii, keycode,
+# modifiers; ⇧⌘ = 1179648) and only flips enabled=0, so the change is a clean,
+# reversible override rather than a destructive edit. Mirrors lib/launcher.zsh's
+# Spotlight ⌘Space handling.
+omac::wm::disable_screenshot_hotkeys() {
+  omac::require_cmd defaults || return 1
+  local entry id params
+  for entry in '28:51, 20, 1179648' '30:52, 21, 1179648' '184:53, 23, 1179648'; do
+    id="${entry%%:*}"; params="${entry#*:}"
+    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add \
+      "$id" "{ enabled = 0; value = { parameters = ( $params ); type = standard; }; }"
+  done
+  omac::info "disabled ⇧⌘3/4/5 screenshots (freed for AeroSpace move-to-workspace)"
+  omac::wm::apply_hotkey_settings
 }
 
 # Map Caps Lock -> Escape (the user's Omarchy `caps:escape`). `hidutil` only

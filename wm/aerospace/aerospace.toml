@@ -94,7 +94,10 @@ cmd-4 = 'workspace 4'
 cmd-5 = 'workspace 5'
 cmd-6 = 'workspace 6'
 
-# Move the focused window to a workspace — Omarchy SUPER+SHIFT+1..6.
+# Move the focused window to a workspace — Omarchy SUPER+SHIFT+1..6. macOS binds
+# ⇧⌘3/4/5 to screenshots by default; `omac wm install` disables those symbolic
+# hotkeys (see omac::wm::disable_screenshot_hotkeys) so these win. Use cmd-shift-p
+# for screenshots.
 cmd-shift-1 = 'move-node-to-workspace 1'
 cmd-shift-2 = 'move-node-to-workspace 2'
 cmd-shift-3 = 'move-node-to-workspace 3'
