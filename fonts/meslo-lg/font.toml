@@ -1,0 +1,5 @@
+# omac font registry entry. `family` is the exact name apps reference; `cask` is
+# the Homebrew cask that installs it (see software/groups/fonts.Brewfile).
+# Meslo LG ships S/M/L line-gap widths; LGS (narrowest) is the powerline default.
+family = "MesloLGS Nerd Font"
+cask = "font-meslo-lg-nerd-font"

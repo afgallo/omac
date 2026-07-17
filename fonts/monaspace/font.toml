@@ -1,0 +1,6 @@
+# omac font registry entry. `family` is the exact name apps reference; `cask` is
+# the Homebrew cask that installs it (see software/groups/fonts.Brewfile).
+# Monaspace ships five cuts (Neon/Argon/Xenon/Radon/Krypton); Neon is the default.
+# Point `family` at another cut (e.g. "MonaspiceRn Nerd Font") to switch.
+family = "MonaspiceNe Nerd Font"
+cask = "font-monaspace-nerd-font"
