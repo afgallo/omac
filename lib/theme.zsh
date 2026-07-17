@@ -439,6 +439,33 @@ omac::theme::wire_nvim() {   # <cfg>
   # its extras imports stop tripping LazyVim's import-order check.
   [[ -L "$cfg/nvim/lua/plugins/omac-lang.lua" ]] && rm -f "$cfg/nvim/lua/plugins/omac-lang.lua"
   omac::theme::wire_lazy_extras "$cfg"
+  omac::theme::wire_nvim_explorer "$cfg"
+}
+
+# Make neo-tree the default file explorer. LazyVim resolves its explorer (like
+# its picker and completion) as a mutually-exclusive "default" while sourcing
+# `lazyvim.plugins`, *before* omac's extras module is imported — so a bare
+# `{ import = editor.neo-tree }` in omac-extras.lua is silently dropped and the
+# snacks explorer wins (this bit us: the import simply never installed). The
+# supported override is the `vim.g.lazyvim_explorer` global, which LazyVim reads
+# first (LazyVim.config.register_defaults) and which must be set in
+# lua/config/options.lua — loaded via M.load("options") before any plugin spec
+# is sourced. Drop it there in a managed block. Can't use omac::ensure_block:
+# its `#` markers are a syntax error in Lua, so this hand-rolls the same
+# idempotent append with `--` comment markers. The grep guard also means a user
+# who has already chosen an explorer (any lazyvim_explorer line) is left alone.
+omac::theme::wire_nvim_explorer() {   # <cfg>
+  local opts="$1/nvim/lua/config/options.lua"
+  mkdir -p "${opts:h}"
+  [[ -f "$opts" ]] || : > "$opts"
+  grep -qF 'lazyvim_explorer' "$opts" && return 0
+  {
+    print -r -- ""
+    print -r -- "-- >>> omac >>>"
+    print -r -- 'vim.g.lazyvim_explorer = "neo-tree" -- omac: default file explorer'
+    print -r -- "-- <<< omac <<<"
+  } >> "$opts"
+  omac::ok "set neo-tree as nvim's default explorer (lua/config/options.lua)"
 }
 
 # Point the user's real app configs at omac (idempotent managed blocks/symlink).

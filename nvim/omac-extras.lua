@@ -16,10 +16,6 @@
 -- project touches. Bash and Lua need nothing here — LazyVim core ships their
 -- grammar and formatting; bash's LSP is added in omac-dx.lua.
 return {
-  -- Editor: neo-tree file explorer. Restores the classic sidebar tree as the
-  -- default explorer (<leader>e / <leader>fe) in place of the snacks explorer.
-  { import = "lazyvim.plugins.extras.editor.neo-tree" },
-
   -- Runtimes omac installs (software/runtimes.manifest).
   { import = "lazyvim.plugins.extras.lang.go" },
   { import = "lazyvim.plugins.extras.lang.ruby" },

@@ -27,6 +27,7 @@ if [[ "$1" == "clone" ]]; then
   dest="${@[-1]}"
   mkdir -p "$dest/.git" "$dest/lua/config"
   print -r -- "starter" > "$dest/init.lua"
+  print -r -- "-- Add any additional options here" > "$dest/lua/config/options.lua"
   cat > "$dest/lua/config/lazy.lua" <<'LUA'
 require("lazy").setup({
   spec = {
@@ -67,14 +68,34 @@ check "extras import precedes plugins import" "1" \
 check "lazy.lua backed up before patch" "1" \
   "$(ls "$LAZY".omac-backup.* >/dev/null 2>&1 && print 1 || print 0)"
 
+# 2b. neo-tree wired as the default explorer via vim.g in options.lua. A bare
+# import can't do this — LazyVim resolves the explorer default before omac's
+# extras module is sourced — so the global override is the only thing that takes.
+OPTS="$XDG_CONFIG_HOME/nvim/lua/config/options.lua"
+contains "explorer set to neo-tree in options.lua" 'vim.g.lazyvim_explorer = "neo-tree"' "$(<"$OPTS")"
+check "explorer set inside a Lua-comment managed block" "1" \
+  "$(grep -qF -- '-- >>> omac >>>' "$OPTS" && print 1 || print 0)"
+
 # 3. Idempotent: an existing nvim config is left untouched (no second clone),
-# the extras import isn't duplicated, and no fresh backup is taken.
+# the extras import isn't duplicated, no fresh backup is taken, and the explorer
+# line isn't appended twice.
 : > "$GIT_LOG"
 omac::theme::wire >/dev/null 2>&1
 check "no clone when nvim config exists" "" "$(<"$GIT_LOG")"
 check "user init.lua preserved" "starter" "$(<"$XDG_CONFIG_HOME/nvim/init.lua")"
 check "extras import not duplicated" "1" "$(grep -cF 'omac.extras' "$LAZY")"
 check "no second backup on re-run" "1" "$(ls "$LAZY".omac-backup.* | wc -l | tr -d ' ')"
+check "explorer line not duplicated" "1" "$(grep -cF 'lazyvim_explorer' "$OPTS")"
+
+# 3b. A user who already chose an explorer is left alone (non-destructive).
+CFG2="$(mktemp -d)"
+mkdir -p "$CFG2/nvim/lua/config"
+print -r -- 'vim.g.lazyvim_explorer = "snacks"' > "$CFG2/nvim/lua/config/options.lua"
+omac::theme::wire_nvim_explorer "$CFG2" >/dev/null 2>&1
+check "user's existing explorer choice respected" "1" \
+  "$(grep -cF 'lazyvim_explorer = "snacks"' "$CFG2/nvim/lua/config/options.lua")"
+check "omac block not added over user's choice" "0" \
+  "$(grep -cF -- '-- >>> omac >>>' "$CFG2/nvim/lua/config/options.lua")"
 
 # 4. Migration: a pre-extras omac-lang.lua symlink in lua/plugins/ is removed
 # (its extras imports tripped LazyVim's import-order check).
