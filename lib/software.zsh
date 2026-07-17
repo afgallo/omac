@@ -60,8 +60,17 @@ omac::software::install_group() {   # <group>
     return 1
   fi
   omac::require_cmd brew || return 1
-  omac::info "installing group: $group"
   omac::software::trust_taps "$file"
+  # Fast path: `brew bundle check` is the read-only "is everything already
+  # installed?" probe (the same one `group_status` uses). When it passes there
+  # is nothing to install, so skip the full `brew bundle` — which only ever adds
+  # *missing* deps, never upgrades, so a satisfied group is a pure no-op anyway.
+  # This is what keeps `omac update` from re-scanning every Brewfile each run.
+  if brew bundle check --file="$file" >/dev/null 2>&1; then
+    omac::ok "group already satisfied: $group"
+    return 0
+  fi
+  omac::info "installing group: $group"
   # HOMEBREW_NO_ASK: Homebrew 6 made "ask mode" the default, prompting to
   # confirm before installing dependencies. Keep the install non-interactive.
   HOMEBREW_NO_ASK=1 brew bundle --file="$file"

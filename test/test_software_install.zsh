@@ -17,8 +17,21 @@ EOF
 _stub_setup
 source "$ROOT/lib/software.zsh"
 
-omac::software::install_group shell >/dev/null 2>&1
-check "install_group shell exits 0" "0" "$?"
+# Satisfied group (check passes): fast path skips the full bundle.
+: > "$BREW_LOG"
+BREW_CHECK_RC=0 omac::software::install_group shell >/dev/null 2>&1
+check "install_group satisfied exits 0" "0" "$?"
+contains "check probe ran" "bundle check --file=$OMAC_SOFTWARE/groups/shell.Brewfile" "$(<"$BREW_LOG")"
+if [[ "$(<"$BREW_LOG")" == *"bundle --file=$OMAC_SOFTWARE/groups/shell.Brewfile"* ]]; then
+  check "satisfied group skips brew bundle" "skipped" "ran"
+else
+  check "satisfied group skips brew bundle" "skipped" "skipped"
+fi
+
+# Missing group (check fails): fall through to the real bundle.
+: > "$BREW_LOG"
+BREW_CHECK_RC=1 omac::software::install_group shell >/dev/null 2>&1
+check "install_group missing exits 0" "0" "$?"
 contains "brew bundle ran on shell Brewfile" "bundle --file=$OMAC_SOFTWARE/groups/shell.Brewfile" "$(<"$BREW_LOG")"
 
 omac::software::install_group nope >/dev/null 2>&1

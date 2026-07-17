@@ -6,8 +6,10 @@ _stub_setup() {
   cat > "$dir/brew" <<'SH'
 #!/usr/bin/env zsh
 print -r -- "$*" >> "$BREW_LOG"
-[[ "$1" == "bundle" && "$2" == "check" ]] && exit "${BREW_CHECK_RC:-0}"
+# A "broken" group fails both the check probe and the install, so install_group's
+# fast path can't mistake it for satisfied. Order matters: check this first.
 case "$*" in *broken*) exit 1 ;; esac
+[[ "$1" == "bundle" && "$2" == "check" ]] && exit "${BREW_CHECK_RC:-0}"
 exit 0
 SH
   cat > "$dir/mise" <<'SH'
