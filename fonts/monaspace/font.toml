@@ -3,4 +3,4 @@
 # Monaspace ships five cuts (Neon/Argon/Xenon/Radon/Krypton); Neon is the default.
 # Point `family` at another cut (e.g. "MonaspiceRn Nerd Font") to switch.
 family = "MonaspiceNe Nerd Font"
-cask = "font-monaspace-nerd-font"
+cask = "font-monaspice-nerd-font"
