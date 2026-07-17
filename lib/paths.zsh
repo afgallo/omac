@@ -12,6 +12,7 @@
 : ${OMAC_NVIM:="$OMAC_HOME/nvim"}   # omac-owned LazyVim plugin specs (extras + DX)
 : ${OMAC_DEFAULT_THEME:="catppuccin"}
 : ${OMAC_ACTIVE_THEME:=""}
+: ${OMAC_ACTIVE_WALLPAPER:=""}        # persisted cycle pointer; empty = theme default (01-)
 : ${OMAC_FONTS:="$OMAC_HOME/fonts"}   # bundled font registry (one dir per font)
 : ${OMAC_DEFAULT_FONT:="jetbrains-mono"}
 : ${OMAC_ACTIVE_FONT:=""}             # persisted in config.zsh alongside the theme

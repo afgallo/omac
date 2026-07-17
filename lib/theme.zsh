@@ -150,10 +150,11 @@ omac::theme::render_tmux() {     # <name> <dest-file>
   } > "$dest"
 }
 
-# Absolute path of the theme's default background. Backgrounds follow the
-# `NN-name.ext` convention (zero-padded from 01); `01-` is the default, so the
-# first omarchy-free file wins. See docs/themes for the naming contract.
-omac::theme::first_background() {    # <name>
+# All of a theme's backgrounds, one absolute path per line, sorted. Backgrounds
+# follow the `NN-name.ext` convention (zero-padded from 01); omarchy-branded
+# files are skipped. This sorted list is the cycle order `omac wallpaper` walks.
+# See docs/themes for the naming contract. Returns 1 when the theme has none.
+omac::theme::backgrounds() {    # <name>
   setopt local_options null_glob
   local dir="$OMAC_THEMES/$1/backgrounds" f
   local -a files
@@ -163,7 +164,15 @@ omac::theme::first_background() {    # <name>
   done
   (( ${#files} )) || return 1
   files=(${(o)files})              # sort
-  print -r -- "${files[1]}"
+  print -rl -- "${files[@]}"
+}
+
+# Absolute path of the theme's default background — the first in cycle order, so
+# `01-` always wins. Thin head of omac::theme::backgrounds.
+omac::theme::first_background() {    # <name>
+  local first; first="$(omac::theme::backgrounds "$1" | head -1)"
+  [[ -n "$first" ]] || return 1
+  print -r -- "$first"
 }
 
 # --- System appliers (side effects: osascript / editor settings) -------------
@@ -177,13 +186,14 @@ omac::theme::apply_appearance() {    # <name>
     || omac::warn "could not set appearance (System Events)"
 }
 
-# Desktop wallpaper: the theme's default background. Live.
+# Set the desktop to a specific image file. Live. The shared low-level setter
+# behind both `theme set` (default background) and `omac wallpaper` (cycling).
 # macOS 14 Sonoma / 15 Sequoia broke the System Events `set picture` API (it
 # returns success but silently no-ops), so prefer the `wallpaper` CLI that
 # `software` installs for exactly this. Fall back to osascript where it's absent
 # (older macOS, or a minimal install without the wm/software layer).
-omac::theme::apply_wallpaper() {     # <name>
-  local bg; bg="$(omac::theme::first_background "$1")" || { omac::warn "no background for $1"; return 0; }
+omac::theme::apply_wallpaper_file() {   # <image-path>
+  local bg="$1"
   omac::info "wallpaper: ${bg:t}"
   if command -v wallpaper >/dev/null 2>&1; then
     wallpaper set "$bg" >/dev/null 2>&1 || omac::warn "could not set wallpaper (wallpaper CLI)"
@@ -192,6 +202,12 @@ omac::theme::apply_wallpaper() {     # <name>
     osascript -e "tell application \"System Events\" to set picture of every desktop to \"$bg\"" >/dev/null 2>&1 \
       || omac::warn "could not set wallpaper"
   fi
+}
+
+# Desktop wallpaper: the theme's default background. Live.
+omac::theme::apply_wallpaper() {     # <name>
+  local bg; bg="$(omac::theme::first_background "$1")" || { omac::warn "no background for $1"; return 0; }
+  omac::theme::apply_wallpaper_file "$bg"
 }
 
 # Write workbench.colorTheme into one editor settings file (create/replace/insert).
@@ -290,9 +306,12 @@ omac::theme::set() {             # <name>
   #     the shell module has seeded starship.toml.
   omac::theme::render_starship "$name"
 
-  # 4-5. Appearance + wallpaper.
+  # 4-5. Appearance + wallpaper. Applying the theme's default background resets
+  #      the wallpaper-cycle pointer (empty = "at the theme default"), so a theme
+  #      switch always lands on 01- and `omac wallpaper next` cycles from there.
   omac::theme::apply_appearance "$name"
   omac::theme::apply_wallpaper "$name"
+  omac::config_set OMAC_ACTIVE_WALLPAPER ""
 
   # 6. Reload what can reload live.
   # borders: re-run the deployed bordersrc to push the new colors to the live

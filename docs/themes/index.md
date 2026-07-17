@@ -55,3 +55,14 @@ NN-name.ext        # zero-padded from 01
 alphabetically, so `01-` always wins. Add extras as `02-`, `03-`, … When adding or
 reordering images, keep the numbering contiguous and make sure `01-` is the image that best
 represents the palette.
+
+Cycle among a theme's backgrounds with [`omac wallpaper`](../commands/wallpaper.md):
+
+```
+omac wallpaper next      # apply the next background (wraps last → 01-)
+omac wallpaper list      # list this theme's backgrounds (● current)
+omac wallpaper current   # print the active wallpaper
+```
+
+The active choice is remembered (`OMAC_ACTIVE_WALLPAPER` in `~/.config/omac/config.zsh`);
+`omac theme set` resets it to the new theme's `01-` default.

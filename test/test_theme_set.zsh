@@ -70,6 +70,8 @@ contains "appearance applied" "set dark mode to true" "$(<"$OSASCRIPT_LOG")"
 contains "wallpaper applied" "01-wall.jpg" "$(<"$WALLPAPER_LOG")"
 contains "borders reloaded" "reload" "$(<"$BORDERS_LOG")"
 contains "selection persisted" 'OMAC_ACTIVE_THEME="tokyo-night"' "$(<"$OMAC_CONFIG/config.zsh")"
+# The wallpaper-cycle pointer resets on a theme switch (empty = theme default).
+contains "wallpaper pointer reset on set" 'OMAC_ACTIVE_WALLPAPER=""' "$(<"$OMAC_CONFIG/config.zsh")"
 # `set` self-heals Neovim: scaffolds LazyVim and links the themed plugin even
 # when the machine was never `install`-ed (regression: set-before-install).
 check "nvim theme plugin linked on set" "1" \
