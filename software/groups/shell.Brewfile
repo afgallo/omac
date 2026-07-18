@@ -6,6 +6,7 @@ brew "bat"
 brew "eza"
 brew "fd"
 brew "git-delta"
+brew "gh"
 brew "starship"
 # Interactive zsh UX — sourced directly from shell/omac.zsh (no framework).
 brew "zsh-autosuggestions"      # fish-style suggestions from history
