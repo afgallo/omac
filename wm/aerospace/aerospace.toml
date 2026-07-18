@@ -96,8 +96,10 @@ cmd-6 = 'workspace 6'
 
 # Move the focused window to a workspace — Omarchy SUPER+SHIFT+1..6. macOS binds
 # ⇧⌘3/4/5 to screenshots by default; `omac wm install` disables those symbolic
-# hotkeys (see omac::wm::disable_screenshot_hotkeys) so these win. Use cmd-shift-p
-# for screenshots.
+# hotkeys (see omac::wm::disable_screenshot_hotkeys) so these win. Screenshots
+# live on Flameshot's own global hotkey (cmd-shift-enter, set in Flameshot —
+# not bound here: a capture tool exec'd by AeroSpace would need AeroSpace to
+# hold the Screen Recording grant, and it doesn't).
 cmd-shift-1 = 'move-node-to-workspace 1'
 cmd-shift-2 = 'move-node-to-workspace 2'
 cmd-shift-3 = 'move-node-to-workspace 3'
@@ -124,7 +126,6 @@ cmd-shift-c   = 'exec-and-forget open -a Claude'
 cmd-shift-e   = 'exec-and-forget open https://app.hey.com'
 cmd-shift-y   = 'exec-and-forget open https://youtube.com'
 cmd-shift-x   = 'exec-and-forget open https://x.com'
-cmd-shift-p   = 'exec-and-forget screencapture -i'
 
 [mode.resize.binding]
 h = 'resize width -50'

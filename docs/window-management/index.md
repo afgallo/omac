@@ -44,6 +44,28 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 | `Cmd`+`1`…`6` | Switch to workspace 1–6 |
 | `Cmd`+`Shift`+`1`…`6` | Move window to workspace 1–6 |
 
+### Reclaimed screenshot shortcuts
+
+macOS reserves `Cmd`+`Shift`+`3`/`4`/`5` for screenshots, which would clobber the
+move-to-workspace binds, so `omac wm install` disables those three system shortcuts.
+Screenshots stay two keys away via [Flameshot](https://flameshot.org) (installed by the
+`guis` software group): set `Cmd`+`Shift`+`Enter` as its capture hotkey in Flameshot's own
+settings. It is deliberately not an AeroSpace bind — a capture tool exec'd by AeroSpace
+would need AeroSpace to hold the Screen Recording permission, so the hotkey belongs to
+Flameshot, which already has the grant. The Screenshot app also remains available.
+
+On macOS 14/15 a preferences write is enough. macOS 26 (Tahoe) no longer reads
+`com.apple.symbolichotkeys` at login, so omac also compiles a small SkyLight helper
+(`~/.local/state/omac/bin/omac-hotkeys`) that switches the shortcuts off in the live
+WindowServer session, and installs a `com.omac.hotkeys` LaunchAgent to re-apply it at every
+login. To get the system shortcuts back:
+
+```bash
+launchctl bootout "gui/$(id -u)/com.omac.hotkeys"
+rm ~/Library/LaunchAgents/com.omac.hotkeys.plist
+~/.local/state/omac/bin/omac-hotkeys 28 1 30 1 184 1   # re-enable live
+```
+
 ## Launch
 
 | Keys | Opens |
@@ -55,7 +77,7 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 | `Cmd`+`Shift`+`S` / `M` / `G` | Slack / Spotify / Signal |
 | `Cmd`+`Shift`+`A` / `C` | ChatGPT / Claude (web) |
 | `Cmd`+`Shift`+`E` / `Y` / `X` | HEY / YouTube / X (web) |
-| `Cmd`+`Shift`+`P` | Interactive screenshot |
+| `Cmd`+`Shift`+`Enter` | Screenshot (Flameshot's own hotkey — see below) |
 
 ## Focus border
 

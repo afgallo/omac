@@ -21,6 +21,11 @@
 : ${OMAC_SOFTWARE:="$OMAC_HOME/software"}
 : ${OMAC_SHELL:="$OMAC_HOME/shell"}
 : ${OMAC_WM:="$OMAC_HOME/wm"}
+# wm hotkeys helper: SkyLight shim compiled at install time (macOS 26+ ignores
+# the symbolichotkeys plist, so the live WindowServer table must be set directly).
+: ${OMAC_HOTKEYS_SRC:="$OMAC_WM/hotkeys/omac-hotkeys.swift"}
+: ${OMAC_HOTKEYS_BIN:="$OMAC_STATE/bin/omac-hotkeys"}
+: ${OMAC_SWIFTC:="swiftc"}   # compiler seam so tests can stub it
 # services: the default dev stack (postgres + redis via docker/colima).
 : ${OMAC_SERVICES_SRC:="$OMAC_HOME/services"}          # read-only repo source
 : ${OMAC_SERVICES_CONFIG:="$OMAC_CONFIG/services"}     # deployed, user-editable

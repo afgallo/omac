@@ -56,26 +56,21 @@ omac::wm::apply_tweaks() {
   omac::ok "tweaks applied"
 }
 
-# Push symbolic-hotkey changes to the live session. OMAC_ACTIVATE_SETTINGS is the
-# private-framework binary (test seam, see lib/paths.zsh); if it is missing, fall
-# back to a re-login hint (non-fatal). Mirrors lib/launcher.zsh.
-omac::wm::apply_hotkey_settings() {
-  if [[ -x "$OMAC_ACTIVATE_SETTINGS" ]]; then
-    "$OMAC_ACTIVATE_SETTINGS" -u
-  else
-    omac::warn "log out and back in for the screenshot-shortcut change to take effect"
-  fi
-}
-
 # Free macOS's ⇧⌘3/4/5 screenshot shortcuts (symbolic hotkeys 28/30/184) so they
-# stop clobbering AeroSpace's cmd-shift-3/4/5 → move-node-to-workspace binds. The
-# cmd-shift-p bind (screencapture -i) and the Screenshot app stay the screenshot
-# entry points.
-# Idempotent: re-asserting the same dict via `defaults -dict-add` is a no-op. Each
-# value dict reproduces the macOS default binding (parameters = ascii, keycode,
-# modifiers; ⇧⌘ = 1179648) and only flips enabled=0, so the change is a clean,
-# reversible override rather than a destructive edit. Mirrors lib/launcher.zsh's
-# Spotlight ⌘Space handling.
+# stop clobbering AeroSpace's cmd-shift-3/4/5 → move-node-to-workspace binds.
+# Screenshots stay on Flameshot's own cmd-shift-enter global hotkey (set in
+# Flameshot) and the Screenshot app.
+#
+# Two layers, because macOS 26 (Tahoe) stopped reading com.apple.symbolichotkeys
+# at login (verified: enabled=0 on disk survived a reboot while WindowServer kept
+# the hotkeys registered):
+#  1. prefs write — honored on macOS 14/15 and keeps System Settings consistent;
+#     a harmless no-op on Tahoe. Each value dict reproduces the default binding
+#     (parameters = ascii, keycode, modifiers; ⇧⌘ = 1179648) and only flips
+#     enabled=0, so it's a clean, reversible override.
+#  2. SkyLight helper — flips WindowServer's live hotkey table directly (needed
+#     on Tahoe, works everywhere). Session-scoped, so a LaunchAgent re-applies
+#     it at every login — same pattern as the Caps->Escape remap.
 omac::wm::disable_screenshot_hotkeys() {
   omac::require_cmd defaults || return 1
   local entry id params
@@ -84,8 +79,65 @@ omac::wm::disable_screenshot_hotkeys() {
     defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add \
       "$id" "{ enabled = 0; value = { parameters = ( $params ); type = standard; }; }"
   done
+  omac::wm::build_hotkeys_helper || return 0  # no compiler: warned, prefs still set
+  "$OMAC_HOTKEYS_BIN" 28 0 30 0 184 0 >/dev/null \
+    || omac::warn "could not update live hotkey table (will apply at next login)"
+  omac::wm::install_hotkeys_agent
   omac::info "disabled ⇧⌘3/4/5 screenshots (freed for AeroSpace move-to-workspace)"
-  omac::wm::apply_hotkey_settings
+}
+
+# Compile the SkyLight helper into OMAC_STATE, skipping when the binary is
+# already newer than its source. swiftc ships with the Xcode CLT, which brew (an
+# omac prerequisite) already requires; a missing compiler is a warn, not a
+# failure — the prefs layer still covers pre-Tahoe systems.
+omac::wm::build_hotkeys_helper() {
+  if [[ -x "$OMAC_HOTKEYS_BIN" && "$OMAC_HOTKEYS_BIN" -nt "$OMAC_HOTKEYS_SRC" ]]; then
+    return 0
+  fi
+  if ! command -v "$OMAC_SWIFTC" >/dev/null 2>&1; then
+    omac::warn "swiftc not found — screenshot shortcuts stay active on macOS 26+"
+    return 1
+  fi
+  mkdir -p "${OMAC_HOTKEYS_BIN:h}"
+  omac::log "compiling hotkeys helper"
+  "$OMAC_SWIFTC" -O "$OMAC_HOTKEYS_SRC" -o "$OMAC_HOTKEYS_BIN" || {
+    omac::warn "hotkeys helper failed to compile"
+    return 1
+  }
+}
+
+# LaunchAgent that re-applies the WindowServer hotkey state at every login (the
+# live table resets each session). Idempotent: plist rewritten and agent
+# re-bootstrapped on every call. Mirrors install_caps_agent.
+omac::wm::install_hotkeys_agent() {
+  local label="com.omac.hotkeys"
+  local agents="${OMAC_LAUNCHAGENTS:-$HOME/Library/LaunchAgents}"
+  local plist="$agents/$label.plist"
+  mkdir -p "$agents"
+  cat > "$plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$label</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>$OMAC_HOTKEYS_BIN</string>
+    <string>28</string><string>0</string>
+    <string>30</string><string>0</string>
+    <string>184</string><string>0</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+</dict>
+</plist>
+PLIST
+  command -v launchctl >/dev/null 2>&1 || return 0
+  # Re-bootstrap so an existing agent picks up changes. bootout is a no-op (and
+  # errors) when nothing is loaded yet, so swallow its failure.
+  local domain="gui/$(id -u)"
+  launchctl bootout "$domain/$label" 2>/dev/null
+  launchctl bootstrap "$domain" "$plist" 2>/dev/null
+  omac::info "installed hotkeys LaunchAgent ($plist)"
 }
 
 # Map Caps Lock -> Escape (the user's Omarchy `caps:escape`). `hidutil` only
