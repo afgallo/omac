@@ -3,8 +3,8 @@
 Configure the interactive shell: modern aliases, tool integrations, and the Starship prompt.
 
 ```
-omac shell install   wire ~/.zshrc + ~/.bashrc, seed Starship, wire tmux, paint the palette
-omac shell status    show which shells (and tmux) are wired
+omac shell install   wire ~/.zshrc + ~/.bashrc, seed Starship, wire git aliases + tmux, paint the palette
+omac shell status    show which shells (and git, tmux) are wired
 ```
 
 `software` installs the CLI layer (Starship, zoxide, fzf, eza, bat, fd, ripgrep, mise, tmux); `shell`
@@ -26,6 +26,8 @@ safe to source before `omac software install` has run — it lights up whatever 
 - **Starship** as the default prompt, colored by the active omac theme.
 - **Modern replacements** — `ls`→eza, `cat`→bat, `cd`→zoxide (frecency jumps), `find`→fd,
   `grep`→ripgrep, `vim`→nvim, plus `lg`=lazygit and a set of `g*` git shortcuts.
+- **Git aliases** — the classic short forms (`git st`, `git co`, `git lg`, …), wired into
+  `~/.gitconfig`. See [Git aliases](#git-aliases).
 - **fzf** key bindings + completion, backed by fd.
 - **mise** runtime activation.
 - Sensible zsh/bash defaults: large de-duplicated shared history, case-insensitive
@@ -33,6 +35,35 @@ safe to source before `omac software install` has run — it lights up whatever 
 
 Edit `shell/shared.sh` (both shells), `shell/omac.zsh`, or `shell/omac.bash` to customize; your
 edits survive updates because omac only manages the marked block in your rc files.
+
+## Git aliases
+
+Shell shortcuts (`gs`, `gco`, …) only cover whole commands — the space form (`git st`) is git's
+own alias mechanism, and git only reads those from gitconfig. So `shell install` also adds one
+managed block to `~/.gitconfig` whose `[include]` points at `shell/gitconfig` straight from the
+repo — `omac update` refreshes the aliases, and everything else in your gitconfig is left alone:
+
+```gitconfig
+# >>> omac >>>
+[include]
+	path = $OMAC_HOME/shell/gitconfig
+# <<< omac <<<
+```
+
+What ships:
+
+| Alias | Expands to | | Alias | Expands to |
+|-------|------------|-|-------|------------|
+| `git st` | `status` | | `git dc` | `diff --cached` |
+| `git co` | `checkout` | | `git lg` | `log --oneline --graph --decorate` |
+| `git sw` | `switch` | | `git last` | `log -1 HEAD` |
+| `git br` | `branch` | | `git unstage` | `restore --staged` |
+| `git ci` | `commit` | | `git ca` | `commit --amend` |
+| `git cm` | `commit -m` | | `git pf` | `push --force-with-lease` |
+| `git df` | `diff` | | | |
+
+Your own `[alias]` entries win on conflict (git lets later definitions override included ones),
+and `omac uninstall` removes the block.
 
 ## tmux
 

@@ -45,6 +45,17 @@ omac::shell::deploy_starship() {
   omac::ok "seeded starship.toml"
 }
 
+# Wire git aliases (`git st` etc.): add a managed block to ~/.gitconfig whose
+# [include] points at shell/gitconfig in the repo, so `omac update` refreshes
+# the aliases with no re-wire. Non-destructive: only the block is ours — git
+# merges the include with everything else in the user's config. The `# >>>`
+# markers are valid gitconfig comments, so ensure_block works unchanged.
+omac::shell::deploy_gitconfig() {
+  omac::ensure_block "$OMAC_GITCONFIG" "[include]
+	path = $OMAC_SHELL/gitconfig"
+  omac::ok "wired ${OMAC_GITCONFIG:t} -> shell/gitconfig"
+}
+
 # Bootstrap TPM (tmux plugin manager) under XDG and install the plugins declared
 # in shell/tmux.conf headlessly — no manual `prefix + I`. Best-effort: a missing
 # git/tmux or a network hiccup warns but never fails the install. Idempotent: the
@@ -86,6 +97,7 @@ omac::shell::install() {
   omac::shell::wire_rc "$OMAC_ZSHRC"  zsh
   omac::shell::wire_rc "$OMAC_BASHRC" bash
   omac::shell::deploy_starship
+  omac::shell::deploy_gitconfig
   omac::shell::deploy_tmux
   local cur
   if cur="$(omac::theme::current 2>/dev/null)"; then
@@ -105,6 +117,8 @@ omac::shell::status() {
   done
   [[ -f "$(omac::shell::config_dir)/starship.toml" ]] && wired=yes || wired=no
   printf "%-12s %s\n" "starship.toml" "$wired"
+  grep -qF '>>> omac >>>' "$OMAC_GITCONFIG" 2>/dev/null && wired=yes || wired=no
+  printf "%-12s %s\n" ".gitconfig" "$wired"
   grep -qF '>>> omac >>>' "$(omac::shell::config_dir)/tmux/tmux.conf" 2>/dev/null && wired=yes || wired=no
   printf "%-12s %s\n" "tmux.conf" "$wired"
 }

@@ -1,0 +1,17 @@
+# omac git aliases — included from ~/.gitconfig via the managed omac block
+# (`omac shell install`). Points at the repo, so `omac update` refreshes these
+# in place; anything else in ~/.gitconfig stays the user's.
+[alias]
+	st = status
+	co = checkout
+	sw = switch
+	br = branch
+	ci = commit
+	ca = commit --amend
+	cm = commit -m
+	df = diff
+	dc = diff --cached
+	lg = log --oneline --graph --decorate
+	last = log -1 HEAD
+	unstage = restore --staged
+	pf = push --force-with-lease

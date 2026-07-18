@@ -20,6 +20,12 @@ for rc in "$OMAC_ZSHRC" "$OMAC_BASHRC"; do
   fi
 done
 
+# Un-wire the git-alias [include] block the `shell` module wrote (no-op if absent).
+if [[ -f "$OMAC_GITCONFIG" ]] && grep -qF '>>> omac >>>' "$OMAC_GITCONFIG" 2>/dev/null; then
+  omac::remove_block "$OMAC_GITCONFIG"
+  omac::ok "removed git aliases from ${OMAC_GITCONFIG:t}"
+fi
+
 # Reverse the one system change launcher makes (re-enable Spotlight ⌘Space).
 # No-op if it was never freed; best-effort so a broken env can't block uninstall.
 source "$OMAC_HOME/lib/launcher.zsh"
