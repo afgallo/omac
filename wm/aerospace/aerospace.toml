@@ -99,13 +99,14 @@ cmd-6 = 'workspace 6'
 # hotkeys (see omac::wm::disable_screenshot_hotkeys) so these win. Screenshots
 # live on Flameshot's own global hotkey (cmd-shift-enter, set in Flameshot —
 # not bound here: a capture tool exec'd by AeroSpace would need AeroSpace to
-# hold the Screen Recording grant, and it doesn't).
-cmd-shift-1 = 'move-node-to-workspace 1'
-cmd-shift-2 = 'move-node-to-workspace 2'
-cmd-shift-3 = 'move-node-to-workspace 3'
-cmd-shift-4 = 'move-node-to-workspace 4'
-cmd-shift-5 = 'move-node-to-workspace 5'
-cmd-shift-6 = 'move-node-to-workspace 6'
+# hold the Screen Recording grant, and it doesn't). --focus-follows-window
+# switches to the target workspace too, like Omarchy's movetoworkspace.
+cmd-shift-1 = 'move-node-to-workspace --focus-follows-window 1'
+cmd-shift-2 = 'move-node-to-workspace --focus-follows-window 2'
+cmd-shift-3 = 'move-node-to-workspace --focus-follows-window 3'
+cmd-shift-4 = 'move-node-to-workspace --focus-follows-window 4'
+cmd-shift-5 = 'move-node-to-workspace --focus-follows-window 5'
+cmd-shift-6 = 'move-node-to-workspace --focus-follows-window 6'
 
 # Enter the resize sub-mode.
 cmd-r = 'mode resize'
