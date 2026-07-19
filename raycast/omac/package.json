@@ -1,0 +1,48 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "omac",
+  "title": "omac",
+  "description": "The omac command palette — run every omac command from Raycast.",
+  "icon": "extension-icon.png",
+  "author": "afgallo",
+  "categories": ["System", "Developer Tools"],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "omac",
+      "title": "omac",
+      "subtitle": "Command palette",
+      "description": "Browse and run omac commands.",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "omacPath",
+      "title": "omac binary",
+      "description": "Absolute path to the omac executable. Leave blank to auto-detect via your login shell.",
+      "type": "textfield",
+      "required": false,
+      "placeholder": "/Users/you/.local/bin/omac"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.83.0",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "^20.11.0",
+    "@types/react": "^19.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "lint": "ray lint",
+    "fix-lint": "ray lint --fix",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}

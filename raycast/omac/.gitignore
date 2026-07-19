@@ -1,0 +1,6 @@
+# Raycast extension build output + deps
+node_modules/
+dist/
+.DS_Store
+raycast-env.d.ts
+*.tsbuildinfo
