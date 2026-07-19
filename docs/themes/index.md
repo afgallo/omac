@@ -46,6 +46,13 @@ Each `themes/<name>/` directory holds two things:
 This hybrid — file-per-app where a port exists, palette-derived where it does not — is the heart
 of omac. See [Architecture](../architecture/index.md#the-theme-seam) for the mechanics.
 
+!!! note "Raycast palette needs Raycast Pro"
+    Unlike the other targets, Raycast has no on-disk config to render — omac applies the palette
+    through Raycast's `raycast://theme` import deeplink under a stable theme named **omac**.
+    Custom themes are a **Raycast Pro** feature, so on a free plan the theme is sent but Raycast
+    declines to apply it. This step is best-effort: `omac theme set` skips it silently when
+    Raycast isn't installed and never fails the switch over it.
+
 ## Wallpapers
 
 Each theme carries one or more images in `themes/<name>/backgrounds/`, named by convention:

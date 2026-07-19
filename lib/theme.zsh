@@ -152,6 +152,43 @@ omac::theme::render_tmux() {     # <name> <dest-file>
   } > "$dest"
 }
 
+# Push the theme palette to Raycast via its `raycast://theme` import deeplink.
+# Unlike the file-per-app renderers, Raycast has no on-disk config omac can drop —
+# the sanctioned path is the deeplink (see raycast/theme-explorer lib/url.ts), so
+# this applies live rather than rendering a file. Best-effort and guarded: custom
+# themes are a Raycast Pro feature and opening the deeplink briefly focuses
+# Raycast, so it is a silent no-op when Raycast isn't installed. A stable name
+# ("omac") makes each switch update the same Raycast theme instead of piling up.
+#
+# Raycast fixes the color order (background, backgroundSecondary, text, selection,
+# loader, then red, orange, yellow, green, blue, purple, magenta). ANSI has no
+# distinct orange, so orange borrows the bright-yellow slot (color11, orange in
+# many palettes); purple/magenta come from the magenta family (color5/color13).
+omac::theme::apply_raycast() {   # <name>
+  [[ -d "$OMAC_RAYCAST_APP" ]] || return 0            # Raycast absent → skip
+  local p="$OMAC_THEMES/$1/colors.toml"
+  local bg fg sel ld red org yel grn blu pur mag
+  bg="$(omac::theme::toml_get "$p" background)"  || return 0
+  fg="$(omac::theme::toml_get "$p" foreground)"  || return 0
+  sel="$(omac::theme::toml_get "$p" color8)"     || sel="$fg"
+  ld="$(omac::theme::toml_get "$p" accent)"      || ld="$fg"
+  red="$(omac::theme::toml_get "$p" color1)"     || red="$fg"
+  org="$(omac::theme::toml_get "$p" color11)"    || org="$fg"
+  yel="$(omac::theme::toml_get "$p" color3)"     || yel="$fg"
+  grn="$(omac::theme::toml_get "$p" color2)"     || grn="$fg"
+  blu="$(omac::theme::toml_get "$p" color4)"     || blu="$fg"
+  pur="$(omac::theme::toml_get "$p" color5)"     || pur="$fg"
+  mag="$(omac::theme::toml_get "$p" color13)"    || mag="$pur"
+  local appearance=dark; omac::theme::is_light "$1" && appearance=light
+  # Colors are comma-joined with each '#' percent-encoded (%23); the rest ride as
+  # plain query params. Order matters — Raycast reads `colors` positionally.
+  local -a cols=("$bg" "$bg" "$fg" "$sel" "$ld" "$red" "$org" "$yel" "$grn" "$blu" "$pur" "$mag")
+  local joined="${(j:,:)cols//\#/%23}"
+  omac::info "raycast palette: omac ($appearance)"
+  open "raycast://theme?name=omac&appearance=$appearance&version=1&colors=$joined" >/dev/null 2>&1 \
+    || omac::warn "could not apply the Raycast theme (custom themes need Raycast Pro)"
+}
+
 # All of a theme's backgrounds, one absolute path per line, sorted. Backgrounds
 # follow the `NN-name.ext` convention (zero-padded from 01); omarchy-branded
 # files are skipped. This sorted list is the cycle order `omac wallpaper` walks.
@@ -326,6 +363,10 @@ omac::theme::set() {             # <name>
   # 3d. Starship palette (best-effort): derived from colors.toml; no-op until
   #     the shell module has seeded starship.toml.
   omac::theme::render_starship "$name"
+
+  # 3e. Raycast palette (best-effort): push the palette to Raycast via its import
+  #     deeplink; no-op when Raycast isn't installed (needs Raycast Pro).
+  omac::theme::apply_raycast "$name"
 
   # 4-5. Appearance + wallpaper. Applying the theme's default background resets
   #      the wallpaper-cycle pointer (empty = "at the theme default"), so a theme
