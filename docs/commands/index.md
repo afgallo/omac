@@ -13,7 +13,8 @@ omac is a single dispatcher, `omac <command> [<subcommand>] [args]`. Commands li
 | [`theme`](theme.md) | Switch the desktop theme (terminal, editor, window borders, wallpaper) |
 | [`wallpaper`](wallpaper.md) | Cycle the desktop wallpaper within the current theme |
 | [`font`](font.md) | Switch the mono font across the terminal (and its TUIs) and editors |
-| [`launcher`](launcher.md) | Guide Raycast first-run (free ⌘Space, hand-hold GUI steps) |
+| [`launcher`](launcher.md) | Guide Raycast first-run (free ⌘Space, hand-hold GUI steps) and build the palette |
+| [command palette](palette.md) | Run every omac command from Raycast (the omac extension) |
 | [`update`](update.md) | Update omac (git pull, brew bundle, run migrations) |
 | [`doctor`](doctor.md) | Check the omac install for problems |
 | [`uninstall`](uninstall.md) | Remove the CLI symlink, shell integration, and (optionally) config |

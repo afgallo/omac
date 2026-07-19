@@ -3,12 +3,13 @@
 Set up Raycast as the keyboard launcher — frees ⌘Space and hand-holds the GUI-only steps.
 
 ```
-omac launcher install   free ⌘Space + guided Raycast first-run
-omac launcher status    show Raycast install/run state and ⌘Space
+omac launcher install   free ⌘Space + guided Raycast first-run + build the palette
+omac launcher status    show Raycast install/run state, ⌘Space, and palette build
 ```
 
-`omac launcher install` opens Raycast and the relevant System Settings panes, then walks
-you through the parts macOS and Raycast forbid scripting:
+`omac launcher install` opens Raycast and the relevant System Settings panes, builds the
+[command palette](palette.md), then walks you through the parts macOS and Raycast forbid
+scripting:
 
 1. **Set the Raycast hotkey to ⌘Space** — Raycast binds itself to ⌥Space on a fresh
    install, so ⌘Space does nothing until you rebind it in **Raycast → Settings → General →
@@ -32,6 +33,6 @@ you through the parts macOS and Raycast forbid scripting:
 
 ## What owns what
 
-Raycast setup is split across three modules: `software` installs the Raycast cask, `theme`
-paints its palette (via `omac theme set`), and `launcher` only handles first-run activation —
-it deploys nothing on disk.
+Raycast setup is split across modules: `software` installs the Raycast cask, `theme`
+paints its palette (via `omac theme set`), and `launcher` handles first-run activation and
+builds the [command palette](palette.md) — it deploys nothing else on disk.

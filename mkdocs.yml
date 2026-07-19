@@ -81,6 +81,7 @@ nav:
       - theme: commands/theme.md
       - font: commands/font.md
       - launcher: commands/launcher.md
+      - command palette: commands/palette.md
       - update: commands/update.md
       - doctor: commands/doctor.md
       - uninstall: commands/uninstall.md

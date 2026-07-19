@@ -7,6 +7,9 @@ source "$ROOT/lib/common.zsh"
 
 # Guard first: no Raycast app -> hard error hinting software install.
 export OMAC_RAYCAST_APP="/nonexistent/Raycast.app"
+# Pin the palette source out of the way so the palette step is a clean no-op
+# here; its own flow is covered by test_launcher_palette.zsh.
+export OMAC_PALETTE_SRC="/nonexistent/palette"
 _launcher_stub_setup
 source "$ROOT/lib/launcher.zsh"
 
