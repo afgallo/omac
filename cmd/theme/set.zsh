@@ -1,4 +1,7 @@
 # help: switch to a bundled theme — omac theme set <name>
+# kind: pick
+# arg: name from "omac theme list"
+# icon: paintbrush
 source "$OMAC_HOME/lib/theme.zsh"
 if [[ -z "${1:-}" ]]; then
   omac::error "usage: omac theme set <name>"

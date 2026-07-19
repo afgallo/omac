@@ -1,4 +1,7 @@
 # help: install software groups (all, or one named group)
+# kind: pick
+# arg: group from "omac software list"
+# icon: download
 source "$OMAC_HOME/lib/software.zsh"
 local group="${1:-}"
 if [[ -z "$group" ]]; then
