@@ -17,6 +17,10 @@ cask "vlc"                                      # universal media player (comple
 cask "slack"
 cask "discord"
 cask "zoom"
+cask "microsoft-teams"
+
+# Files / storage.
+cask "dropbox"
 
 # Desktop environment — installed here; configured by the wm/launcher/theme modules.
 cask "ghostty"                                  # canonical / default terminal
