@@ -259,6 +259,22 @@ omac::theme::apply_delta() {         # <name>
   omac::info "delta syntax-theme: $theme"
 }
 
+# opencode: write "theme" into ~/.config/opencode/tui.json when the theme names an
+# opencode builtin in apps.toml; no-op otherwise (e.g. themes with no apps.toml).
+# Six omac themes map to an opencode builtin by name; the rest use "system" so
+# opencode follows the light/dark that apply_appearance already set. tui.json is
+# the modern home for the theme key (the top-level opencode.json `theme` is
+# deprecated), so this never touches the user's own opencode.json. json_set_raw
+# preserves any sibling keys and creates the file when absent — no CLI needed,
+# it's just config, and opencode picks it up on next launch.
+omac::theme::apply_opencode() {      # <name>
+  local theme; theme="$(omac::theme::toml_get "$OMAC_THEMES/$1/apps.toml" opencode)" || return 0
+  [[ -n "$theme" ]] || return 0
+  local f; f="$(omac::theme::config_dir)/opencode/tui.json"
+  omac::json_set_raw "$f" theme "\"$theme\""
+  omac::info "opencode theme: $theme"
+}
+
 # --- Orchestration -----------------------------------------------------------
 
 # Persist the active theme. config_set upserts just this key, leaving the font
@@ -299,6 +315,9 @@ omac::theme::set() {             # <name>
   # 3b. bat + git-delta (best-effort): both driven by the apps.toml `bat` name.
   omac::theme::apply_bat "$name"
   omac::theme::apply_delta "$name"
+
+  # 3b'. opencode (best-effort): its own builtin theme, named in apps.toml.
+  omac::theme::apply_opencode "$name"
 
   # 3c. Neovim (self-heal): scaffold LazyVim once if missing, keep the themed
   #     plugin symlink in place. No-op after the first successful scaffold.

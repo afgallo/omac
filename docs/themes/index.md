@@ -33,7 +33,10 @@ Each `themes/<name>/` directory holds two things:
 
 - **Ported per-app files** — ready-made configs for apps that Omarchy already themed (Ghostty,
   Neovim (as [LazyVim](https://www.lazyvim.org)), bat, delta, lazygit, wallpaper,
-  and more). These drop in almost unchanged.
+  and more). These drop in almost unchanged. Apps that ship their own builtin themes
+  (Ghostty, bat, [opencode](https://opencode.ai)) are pointed at the matching builtin by
+  name via each theme's `apps.toml` — opencode falls back to its `system` theme (following
+  the macOS light/dark omac sets) for palettes with no builtin match.
 - **A `colors.toml` palette** — for the targets Omarchy never had a per-app file for (macOS
   light/dark appearance, JankyBorders, the [Starship](../commands/shell.md#starship-theming) prompt,
   Raycast, AeroSpace accent/border colors, and the tmux status line), omac *derives* the config

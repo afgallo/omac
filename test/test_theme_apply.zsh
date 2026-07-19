@@ -47,4 +47,19 @@ omac::theme::apply_vscode "Nord" >/dev/null 2>&1
 vsout="$(<"$vs")"
 contains "vscode value replaced" '"workbench.colorTheme": "Nord"' "$vsout"
 check "vscode no duplicate key" "1" "$(grep -c 'workbench.colorTheme' "$vs")"
+
+# opencode: driven by the apps.toml `opencode` name; writes tui.json (not the
+# user's opencode.json). Create when absent, replace when present, no-op when
+# the theme names none.
+tui="$XDG_CONFIG_HOME/opencode/tui.json"
+print -r -- 'opencode = "tokyonight"' > "$OMAC_THEMES/dark/apps.toml"
+omac::theme::apply_opencode dark >/dev/null 2>&1
+contains "opencode created with theme" '"theme": "tokyonight"' "$(<"$tui")"
+print -r -- 'opencode = "system"' > "$OMAC_THEMES/dark/apps.toml"
+omac::theme::apply_opencode dark >/dev/null 2>&1
+contains "opencode value replaced" '"theme": "system"' "$(<"$tui")"
+check "opencode no duplicate key" "1" "$(grep -c '"theme"' "$tui")"
+: > "$OMAC_THEMES/pick/apps.toml"   # no opencode key
+omac::theme::apply_opencode pick >/dev/null 2>&1
+contains "opencode no-op leaves tui.json unchanged" '"theme": "system"' "$(<"$tui")"
 finish
