@@ -140,9 +140,11 @@ omac::theme::render_tmux() {     # <name> <dest-file>
   mkdir -p "${dest:h}"
   {
     print -r -- "# omac — rendered by 'omac theme set'. Do not edit."
-    print -r -- "set -g status-style \"bg=$bg,fg=$fg\""
-    print -r -- "set -g window-status-current-style \"bg=$ac,fg=$bg,bold\""
-    print -r -- "set -g window-status-style \"fg=$fg\""
+    print -r -- "set -g status-style \"bg=$bg,fg=$fg\""                          # bar blends into terminal bg
+    print -r -- "set -g status-left-style \"fg=$ac,bold\""                       # session name = accent
+    print -r -- "set -g window-status-style \"fg=$fg,dim\""                      # inactive = dimmed fg
+    print -r -- "set -g window-status-current-style \"fg=$ac,bold,underscore\""  # active = accent + underline
+    print -r -- "set -g status-right-style \"fg=$fg,dim\""                       # right side = quiet chrome
     print -r -- "set -g pane-border-style \"fg=$lo\""
     print -r -- "set -g pane-active-border-style \"fg=$ac\""
     print -r -- "set -g mode-style \"bg=$ac,fg=$bg\""
