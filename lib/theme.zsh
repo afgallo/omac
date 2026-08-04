@@ -189,6 +189,25 @@ omac::theme::apply_raycast() {   # <name>
     || omac::warn "could not apply the Raycast theme (custom themes need Raycast Pro)"
 }
 
+# Push the theme to Google Chrome via its BrowserThemeColor managed policy. Like
+# Raycast, Chrome has no drop-in config omac can render; the sanctioned path is a
+# managed policy, and on macOS that policy lives in Chrome's own preferences domain
+# (`defaults write com.google.Chrome …`, no MDM needed — see Chromium's Mac admin
+# quick-start). Chrome auto-generates a full theme from the single seed color, so we
+# feed it the palette's `background` to match the terminal/desktop chrome. Best-effort
+# and guarded: silent no-op when Chrome isn't installed. Applies on Chrome's next
+# launch (or chrome://policy → Reload) — we don't force a relaunch.
+omac::theme::apply_chrome() {     # <name>
+  [[ -d "$OMAC_CHROME_APP" ]] || return 0            # Chrome absent → skip
+  local seed; seed="$(omac::theme::toml_get "$OMAC_THEMES/$1/colors.toml" background)" || return 0
+  local scheme=dark; omac::theme::is_light "$1" && scheme=light
+  omac::info "chrome theme: $seed ($scheme)"
+  defaults write com.google.Chrome BrowserThemeColor  -string "$seed"   >/dev/null 2>&1 \
+    || { omac::warn "could not set Chrome theme color"; return 0; }
+  defaults write com.google.Chrome BrowserColorScheme -string "$scheme" >/dev/null 2>&1 \
+    || omac::warn "could not set Chrome color scheme"
+}
+
 # All of a theme's backgrounds, one absolute path per line, sorted. Backgrounds
 # follow the `NN-name.ext` convention (zero-padded from 01); omarchy-branded
 # files are skipped. This sorted list is the cycle order `omac wallpaper` walks.
@@ -367,6 +386,10 @@ omac::theme::set() {             # <name>
   # 3e. Raycast palette (best-effort): push the palette to Raycast via its import
   #     deeplink; no-op when Raycast isn't installed (needs Raycast Pro).
   omac::theme::apply_raycast "$name"
+
+  # 3f. Chrome (best-effort): set the BrowserThemeColor managed policy from the
+  #     palette; no-op when Chrome isn't installed. Applies on next Chrome launch.
+  omac::theme::apply_chrome "$name"
 
   # 4-5. Appearance + wallpaper. Applying the theme's default background resets
   #      the wallpaper-cycle pointer (empty = "at the theme default"), so a theme

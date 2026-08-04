@@ -34,6 +34,9 @@
 # detect its app bundle; activateSettings is a fixed private-framework binary.
 : ${OMAC_RAYCAST_APP:="/Applications/Raycast.app"}
 : ${OMAC_ACTIVATE_SETTINGS:="/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings"}
+# theme: Chrome ships no PATH binary either, so we detect its app bundle to guard
+# the BrowserThemeColor policy applier. Overridable so tests can redirect it.
+: ${OMAC_CHROME_APP:="/Applications/Google Chrome.app"}
 
 omac::prefix() {
   if [[ -n "${OMAC_PREFIX:-}" ]]; then

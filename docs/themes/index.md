@@ -39,9 +39,9 @@ Each `themes/<name>/` directory holds two things:
   the macOS light/dark omac sets) for palettes with no builtin match.
 - **A `colors.toml` palette** — for the targets Omarchy never had a per-app file for (macOS
   light/dark appearance, JankyBorders, the [Starship](../commands/shell.md#starship-theming) prompt,
-  Raycast, AeroSpace accent/border colors, and the tmux status line), omac *derives* the config
-  from this palette through a templating seam. Nothing to hand-port. tmux status colors are
-  re-sourced into any running server, so a theme switch recolors tmux live.
+  Raycast, Google Chrome, AeroSpace accent/border colors, and the tmux status line), omac *derives*
+  the config from this palette through a templating seam. Nothing to hand-port. tmux status colors
+  are re-sourced into any running server, so a theme switch recolors tmux live.
 
 This hybrid — file-per-app where a port exists, palette-derived where it does not — is the heart
 of omac. See [Architecture](../architecture/index.md#the-theme-seam) for the mechanics.
@@ -52,6 +52,16 @@ of omac. See [Architecture](../architecture/index.md#the-theme-seam) for the mec
     Custom themes are a **Raycast Pro** feature, so on a free plan the theme is sent but Raycast
     declines to apply it. This step is best-effort: `omac theme set` skips it silently when
     Raycast isn't installed and never fails the switch over it.
+
+!!! note "Chrome uses a managed policy"
+    Chrome has no drop-in theme file either, so omac seeds its **`BrowserThemeColor`** managed
+    policy with the theme's `background` (and `BrowserColorScheme` with the theme's light/dark) —
+    the macOS-native equivalent of the policy file Omarchy writes on Linux, set via
+    `defaults write com.google.Chrome …` (no MDM needed). Chrome auto-generates its whole theme
+    from that one seed color on its **next launch** (or `chrome://policy` → *Reload policies*).
+    The one visible trade-off: Chrome shows a *"Managed by your organization"* indicator and lists
+    the two policies at `chrome://policy` — the accepted cost of scriptable theming. Best-effort:
+    `omac theme set` skips it silently when Chrome isn't installed and never fails the switch.
 
 ## Wallpapers
 
