@@ -73,7 +73,7 @@ cmd-alt-l = 'move right'
 # Layout toggles.
 cmd-slash = 'layout tiles accordion'   # toggle split style
 cmd-comma = 'layout floating tiling'   # toggle float
-cmd-f     = 'macos-native-fullscreen'
+cmd-alt-f = 'macos-native-fullscreen'   # cmd-f left free for native apps (Find)
 
 # One-key resize of the focused window — Omarchy SUPER+-/=. AeroSpace resizes by
 # width magnitude (no directional grow), so '=' widens and '-' narrows, mirroring
@@ -115,7 +115,7 @@ cmd-r = 'mode resize'
 # `open -a` focuses the app if it is already running (= Omarchy launch-or-focus).
 cmd-enter     = 'exec-and-forget open -na Ghostty'
 cmd-alt-enter = 'exec-and-forget open -na Ghostty'   # tmux auto-attach: Ghostty-config follow-up
-cmd-shift-b   = 'exec-and-forget open -a Safari'
+cmd-shift-b   = 'exec-and-forget open -a "Google Chrome"'
 cmd-shift-n   = 'exec-and-forget open -a "Visual Studio Code"'
 cmd-shift-o   = 'exec-and-forget open -a Obsidian'
 cmd-shift-s   = 'exec-and-forget open -a Slack'

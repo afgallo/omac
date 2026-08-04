@@ -32,7 +32,7 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 |---|---|
 | `Cmd`+`/` | Toggle tiles ↔ accordion |
 | `Cmd`+`,` | Toggle floating ↔ tiling |
-| `Cmd`+`F` | macOS native fullscreen |
+| `Cmd`+`Alt`+`F` | macOS native fullscreen (`Cmd`+`F` left free for native Find) |
 | `Cmd`+`Q` | Quit focused app (native macOS quit) |
 | `Cmd`+`-` / `Cmd`+`=` | Resize focused window narrower / wider |
 | `Cmd`+`R` | Enter resize mode |
@@ -71,7 +71,7 @@ rm ~/Library/LaunchAgents/com.omac.hotkeys.plist
 | Keys | Opens |
 |---|---|
 | `Cmd`+`Enter` | Ghostty (new window) |
-| `Cmd`+`Shift`+`B` | Safari |
+| `Cmd`+`Shift`+`B` | Google Chrome |
 | `Cmd`+`Shift`+`N` | Visual Studio Code |
 | `Cmd`+`Shift`+`O` | Obsidian |
 | `Cmd`+`Shift`+`S` / `M` / `G` | Slack / Spotify / Signal |
