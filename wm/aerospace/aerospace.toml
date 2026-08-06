@@ -70,16 +70,27 @@ cmd-alt-j = 'move down'
 cmd-alt-k = 'move up'
 cmd-alt-l = 'move right'
 
-# Layout toggles.
-cmd-slash = 'layout tiles accordion'   # toggle split style
-cmd-comma = 'layout floating tiling'   # toggle float
-cmd-alt-f = 'macos-native-fullscreen'   # cmd-f left free for native apps (Find)
+# Layout toggles. cmd-alt-slash is Omarchy's SUPER+J (layoutmsg togglesplit):
+# it flips the parent container's orientation, which is a different axis from
+# cmd-slash's tiles/accordion — grouped on the same key so both read together.
+cmd-slash     = 'layout tiles accordion'      # toggle split style
+cmd-alt-slash = 'layout horizontal vertical'  # toggle split orientation
+cmd-comma     = 'layout floating tiling'      # toggle float
+cmd-alt-f     = 'macos-native-fullscreen'     # cmd-f left free for native apps (Find)
 
-# One-key resize of the focused window — Omarchy SUPER+-/=. AeroSpace resizes by
-# width magnitude (no directional grow), so '=' widens and '-' narrows, mirroring
-# the resize sub-mode's l/h. The tiling neighbour gives/takes the reclaimed space.
-cmd-minus = 'resize width -50'
-cmd-equal = 'resize width +50'
+# One-key resize of the focused window — Omarchy SUPER+-/= (width) and
+# SUPER+SHIFT+-/= (height). Height lives on cmd-alt rather than cmd-shift:
+# cmd-shift-equal is physically how you type cmd-plus, so binding it would eat
+# zoom-in in every browser and editor. cmd-alt also matches this file's existing
+# convention (cmd-alt-hjkl = move). The tiling neighbour gives/takes the space.
+#
+# Caveat: `resize` adjusts a node's weight *relative to its siblings*, so it is a
+# no-op on the only window in a workspace, and does nothing at all on floating
+# windows (AeroSpace issue #9). See docs/window-management/index.md.
+cmd-minus     = 'resize width -50'
+cmd-equal     = 'resize width +50'
+cmd-alt-minus = 'resize height -50'
+cmd-alt-equal = 'resize height +50'
 
 # Quit the focused app — Omarchy SUPER+Q, mapped to macOS's native "quit" so the
 # app fully exits (not just its window). AeroSpace has no quit primitive, so ask
@@ -133,5 +144,6 @@ h = 'resize width -50'
 j = 'resize height +50'
 k = 'resize height -50'
 l = 'resize width +50'
+b = 'balance-sizes'   # escape hatch — resize is cumulative and easy to overshoot
 enter = 'mode main'
 esc   = 'mode main'

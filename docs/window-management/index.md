@@ -31,11 +31,37 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 | Keys | Action |
 |---|---|
 | `Cmd`+`/` | Toggle tiles ↔ accordion |
+| `Cmd`+`Alt`+`/` | Toggle split orientation (horizontal ↔ vertical) |
 | `Cmd`+`,` | Toggle floating ↔ tiling |
 | `Cmd`+`Alt`+`F` | macOS native fullscreen (`Cmd`+`F` left free for native Find) |
 | `Cmd`+`Q` | Quit focused app (native macOS quit) |
-| `Cmd`+`-` / `Cmd`+`=` | Resize focused window narrower / wider |
-| `Cmd`+`R` | Enter resize mode |
+
+## Resize
+
+| Keys | Action |
+|---|---|
+| `Cmd`+`-` / `Cmd`+`=` | Narrower / wider |
+| `Cmd`+`Alt`+`-` / `Cmd`+`Alt`+`=` | Shorter / taller |
+| `Cmd`+`R` | Resize mode — `h`/`l` width, `j`/`k` height, `b` to balance, `Esc` to exit |
+
+Width mirrors Omarchy's `SUPER`+`-`/`=` exactly. Height sits on `Cmd`+`Alt` rather than
+Omarchy's `SUPER`+`Shift`+`-`/`=`, because `Cmd`+`Shift`+`=` is physically how you type
+`Cmd`+`+` — binding it would swallow zoom-in in every browser and editor. `Cmd`+`Alt` is
+also this config's existing "other axis" modifier (`Cmd`+`Alt`+`H`/`J`/`K`/`L` moves windows).
+
+Two limits are worth knowing, because both look like bugs and neither is:
+
+- **Resize is relative.** AeroSpace resizes a window by shifting weight between it and its
+  tiling neighbours, so the keys do nothing on the *only* window in a workspace — there is no
+  neighbour to give or take the space. Open a second window and they come alive. If you want
+  a lone window to stop filling the screen, widen the gaps in `[gaps]` instead.
+- **Floating windows can't be resized.** `resize` is a no-op once a window is floating
+  ([AeroSpace issue #9](https://github.com/nikitabobko/AeroSpace/issues/9)), so `Cmd`+`,`
+  then `Cmd`+`-` won't shrink anything. Float is for windows you want out of the tiling tree,
+  not for free-form sizing.
+
+Resize is cumulative, so it is easy to overshoot. `Cmd`+`R` then `b` runs `balance-sizes` and
+puts the workspace back to even splits.
 
 ## Workspaces
 
