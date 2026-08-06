@@ -33,6 +33,13 @@ check "cmd-alt-equal heightens" "resize height +50" "$(_bound cmd-alt-equal)"
 check "cmd-alt-slash toggles orientation" "layout horizontal vertical" "$(_bound cmd-alt-slash)"
 check "cmd-slash still toggles tiles/accordion" "layout tiles accordion" "$(_bound cmd-slash)"
 
+# Lock (Omarchy SUPER+ESCAPE). Double-quoted like cmd-q — the osascript body has
+# single quotes in it — so `_bound` can't parse it; assert on the raw text instead.
+contains "cmd-esc locks the screen" \
+  "cmd-esc = \"exec-and-forget osascript" "$(<"$toml")"
+contains "cmd-esc drives the native Lock Screen shortcut" \
+  'keystroke \"q\" using {control down, command down}' "$(<"$toml")"
+
 # The resize sub-mode needs a way back — resize is cumulative and easy to overshoot.
 contains "resize mode can balance sizes" "balance-sizes" "$(<"$toml")"
 

@@ -97,6 +97,13 @@ cmd-alt-equal = 'resize height +50'
 # the frontmost process to quit via osascript.
 cmd-q = "exec-and-forget osascript -e 'tell application \"System Events\" to set p to name of first application process whose frontmost is true' -e 'tell application p to quit'"
 
+# Lock the screen — Omarchy SUPER+ESCAPE. AeroSpace has no lock primitive, and no
+# macOS CLI locks *immediately* (`pmset displaysleepnow` still honours the
+# "require password after…" grace period), so trigger the native ⌃⌘Q Lock Screen
+# via System Events — same osascript route as cmd-q above. ⌘Esc is free; macOS
+# reserves ⌥⌘Esc (Force Quit), not the bare combo.
+cmd-esc = "exec-and-forget osascript -e 'tell application \"System Events\" to keystroke \"q\" using {control down, command down}'"
+
 # Switch workspace — Omarchy SUPER+1..6.
 cmd-1 = 'workspace 1'
 cmd-2 = 'workspace 2'

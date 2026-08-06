@@ -35,6 +35,7 @@ registers only the specific Cmd combos below as global hotkeys — every unbound
 | `Cmd`+`,` | Toggle floating ↔ tiling |
 | `Cmd`+`Alt`+`F` | macOS native fullscreen (`Cmd`+`F` left free for native Find) |
 | `Cmd`+`Q` | Quit focused app (native macOS quit) |
+| `Cmd`+`Esc` | Lock the screen (native `Ctrl`+`Cmd`+`Q` Lock Screen) |
 
 ## Resize
 
